@@ -235,6 +235,13 @@ Steam_Client *get_steam_client()
         if (!steamclient_instance) {
             load_old_steam_interfaces();
             steamclient_instance = new Steam_Client();
+
+            if (strstr(old_friends, "SteamFriends")) {
+                int friends_ver = atoi(old_friends + 12);
+                if (friends_ver != 0 && friends_ver <= 4) {
+                    steamclient_instance->using_old_callbacks = true;
+                }
+            }
         }
     }
 

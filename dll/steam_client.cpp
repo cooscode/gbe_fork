@@ -482,11 +482,22 @@ void Steam_Client::Remove_SteamAPI_CPostAPIResultInProcess( SteamAPI_PostAPIResu
     PRINT_DEBUG_TODO();
 }
 
-void Steam_Client::RegisterCallback( class CCallbackBase *pCallback, int iCallback)
+void Steam_Client::RegisterCallback( class CCallbackBase *pCallback, int iCallback )
 {
+    CCallbackBase *callback_to_add = pCallback;
+
+    // 1.02x added an overload for CCallbackBase::Run. Because of how MSVC handles virtual function
+    // overloads, this changed the order of functions in vtable from 1.02, which breaks old games.
+    // We get around this using a wrapper for the old CCallbackBase variant.
+    if (using_old_callbacks) {
+        PRINT_DEBUG("creating a wrapper for old callback %08X %i", pCallback, iCallback);
+        auto [it, _] = old_callbacks_map.emplace(pCallback, pCallback);
+        callback_to_add = &(it->second);
+    }
+
     int base_callback = (iCallback / 100) * 100;
     int callback_id = iCallback % 100;
-    bool isGameServer = CCallbackMgr::isServer(pCallback);
+    bool isGameServer = CCallbackMgr::isServer(callback_to_add);
     PRINT_DEBUG("isGameServer %u %i %i", isGameServer, iCallback, base_callback);
 
     switch (base_callback) {
@@ -699,18 +710,26 @@ void Steam_Client::RegisterCallback( class CCallbackBase *pCallback, int iCallba
     };
 
     if (isGameServer) {
-        callbacks_server->addCallBack(iCallback, pCallback);
+        callbacks_server->addCallBack(iCallback, callback_to_add);
     } else {
-        callbacks_client->addCallBack(iCallback, pCallback);
+        callbacks_client->addCallBack(iCallback, callback_to_add);
     }
 }
 
-void Steam_Client::UnregisterCallback( class CCallbackBase *pCallback)
+void Steam_Client::UnregisterCallback( class CCallbackBase *pCallback )
 {
-    int iCallback = pCallback->GetICallback();
+    CCallbackBase *callback_to_rm = pCallback;
+    if (using_old_callbacks) {
+        if (!old_callbacks_map.count(pCallback))
+            return;
+
+        callback_to_rm = &(old_callbacks_map.at(pCallback));
+    }
+
+    int iCallback = callback_to_rm->GetICallback();
     int base_callback = (iCallback / 100) * 100;
     int callback_id = iCallback % 100;
-    bool isGameServer = CCallbackMgr::isServer(pCallback);
+    bool isGameServer = CCallbackMgr::isServer(callback_to_rm);
     PRINT_DEBUG("isGameServer %u %i", isGameServer, base_callback);
 
     switch (base_callback) {
@@ -923,13 +942,17 @@ void Steam_Client::UnregisterCallback( class CCallbackBase *pCallback)
     };
 
     if (isGameServer) {
-        callbacks_server->rmCallBack(iCallback, pCallback);
+        callbacks_server->rmCallBack(iCallback, callback_to_rm);
     } else {
-        callbacks_client->rmCallBack(iCallback, pCallback);
+        callbacks_client->rmCallBack(iCallback, callback_to_rm);
+    }
+
+    if (using_old_callbacks) {
+        old_callbacks_map.erase(pCallback);
     }
 }
 
-void Steam_Client::RegisterCallResult( class CCallbackBase *pCallback, SteamAPICall_t hAPICall)
+void Steam_Client::RegisterCallResult( class CCallbackBase *pCallback, SteamAPICall_t hAPICall )
 {
     PRINT_DEBUG("%llu %i", hAPICall, pCallback->GetICallback());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
@@ -938,7 +961,7 @@ void Steam_Client::RegisterCallResult( class CCallbackBase *pCallback, SteamAPIC
     
 }
 
-void Steam_Client::UnregisterCallResult( class CCallbackBase *pCallback, SteamAPICall_t hAPICall)
+void Steam_Client::UnregisterCallResult( class CCallbackBase *pCallback, SteamAPICall_t hAPICall )
 {
     PRINT_DEBUG("%llu %i", hAPICall, pCallback->GetICallback());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);

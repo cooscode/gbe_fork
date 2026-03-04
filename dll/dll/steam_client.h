@@ -64,6 +64,7 @@
 
 #include "overlay/steam_overlay.h"
 #include "playtime.h"
+#include "callback_wrapper.h"
 
 enum Steam_Pipe {
     NO_USER,
@@ -110,6 +111,8 @@ private:
 
     common_helpers::KillableWorker *background_thread{};
     void background_thread_proc();
+
+    std::map<CCallbackBase *, CCallBackWrapper> old_callbacks_map;
 
 public:
     Networking *network{};
@@ -180,10 +183,11 @@ public:
 
     PlaytimeCounter* playtime_counter{};
 
-    bool steamclient_server_inited = false;
+    bool steamclient_server_inited{};
 
     bool gameserver_has_ipv6_functions{};
     int steamclient_version{};
+    bool using_old_callbacks{};
     
     unsigned steam_pipe_counter = 1;
     std::map<HSteamPipe, enum Steam_Pipe> steam_pipes{};
@@ -347,11 +351,11 @@ public:
     
     ISteamAppTicket *GetAppTicket( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion );
 
-    void RegisterCallback( class CCallbackBase *pCallback, int iCallback);
-    void UnregisterCallback( class CCallbackBase *pCallback);
+    void RegisterCallback( class CCallbackBase *pCallback, int iCallback );
+    void UnregisterCallback( class CCallbackBase *pCallback) ;
 
-    void RegisterCallResult( class CCallbackBase *pCallback, SteamAPICall_t hAPICall);
-    void UnregisterCallResult( class CCallbackBase *pCallback, SteamAPICall_t hAPICall);
+    void RegisterCallResult( class CCallbackBase *pCallback, SteamAPICall_t hAPICall );
+    void UnregisterCallResult( class CCallbackBase *pCallback, SteamAPICall_t hAPICall );
     
     void RunCallbacks(bool runClientCB, bool runGameserverCB);
     void setAppID(uint32 appid);
