@@ -211,15 +211,6 @@ static void load_old_steam_interfaces()
     reset_LastError();
 }
 
-//steam_api_internal.h
-STEAMAPI_API HSteamUser SteamAPI_GetHSteamUser()
-{
-    PRINT_DEBUG_ENTRY();
-    if (!get_steam_client()->IsUserLogIn()) return 0;
-    return CLIENT_HSTEAMUSER;
-}
-
-
 // declare "g_pSteamClientGameServer" as an export for API library, then actually define it
 #if !defined(STEAMCLIENT_DLL) // api
 STEAMAPI_API ISteamClient *g_pSteamClientGameServer;
@@ -688,6 +679,8 @@ STEAMAPI_API void Steam_RegisterInterfaceFuncs( void *hModule )
     PRINT_DEBUG_TODO();
 }
 
+STEAMAPI_API HSteamUser SteamAPI_GetHSteamUser();
+
 // returns the HSteamUser of the last user to dispatch a callback
 STEAMAPI_API HSteamUser Steam_GetHSteamUserCurrent()
 {
@@ -712,6 +705,14 @@ STEAMAPI_API const char *SteamAPI_GetSteamInstallPath()
 
     PRINT_DEBUG("returned path '%s'", steam_folder);
     return steam_folder;
+}
+
+//steam_api_internal.h
+STEAMAPI_API HSteamUser SteamAPI_GetHSteamUser()
+{
+    PRINT_DEBUG_ENTRY();
+    if (!steamclient_instance || !get_steam_client()->IsUserLogIn()) return 0;
+    return CLIENT_HSTEAMUSER;
 }
 
 // returns the pipe we are communicating to Steam with
@@ -757,7 +758,7 @@ STEAMAPI_API ISteamClient *SteamClient()
     return (ISteamClient *)SteamInternal_CreateInterface(old_client);
 }
 
-#define CACHE_OLDSTEAM_INSTANCE(variable, get_func) { if (variable) return variable; else return variable = (get_func); }
+#define CACHE_OLDSTEAM_INSTANCE(variable, get_func) { if (!steamclient_instance) return nullptr; if (variable) return variable; else return variable = (get_func); }
 
 STEAMAPI_API ISteamUser *SteamUser()
 {
@@ -960,6 +961,7 @@ STEAMAPI_API HSteamPipe S_CALLTYPE SteamGameServer_GetHSteamPipe()
 STEAMAPI_API HSteamUser S_CALLTYPE SteamGameServer_GetHSteamUser()
 {
     PRINT_DEBUG_ENTRY();
+    if (!steamclient_instance) return 0;
     if (!get_steam_client()->IsServerInit()) return 0;
     return SERVER_HSTEAMUSER;
 }
@@ -1197,12 +1199,14 @@ STEAMAPI_API void SteamGameServer_RunCallbacks()
 STEAMAPI_API steam_bool SteamGameServer_BSecure()
 {
     PRINT_DEBUG_ENTRY();
+    if (!steamclient_instance) return false;
     return get_steam_client()->steam_gameserver->BSecure();
 }
 
 STEAMAPI_API uint64 SteamGameServer_GetSteamID()
 {
     PRINT_DEBUG_ENTRY();
+    if (!steamclient_instance) return 0;
     return get_steam_client()->steam_gameserver->GetSteamID().ConvertToUint64();
 }
 
@@ -1215,6 +1219,7 @@ STEAMAPI_API ISteamClient *SteamGameServerClient()
 
 STEAMAPI_API uint32 SteamGameServer_GetIPCCallCount()
 {
+    if (!steamclient_instance) return 0;
     return get_steam_client()->GetIPCCallCount();
 }
 
