@@ -1340,9 +1340,9 @@ bool Steam_Networking_Sockets::SetConnectionPollGroup( HSteamNetConnection hConn
 
     HSteamNetPollGroup old_poll_group = connect_socket->second.poll_group;
     if (old_poll_group != k_HSteamNetPollGroup_Invalid) {
-        auto group = sbcs->poll_groups.find(hPollGroup);
-        if (group != sbcs->poll_groups.end()) {
-            group->second.remove(hConn);
+        auto old_group = sbcs->poll_groups.find(old_poll_group); // bugfix: should be old_poll_group
+        if (old_group != sbcs->poll_groups.end()) {
+            old_group->second.remove(hConn);
         }
     }
 
