@@ -412,7 +412,7 @@ void Steam_GameServer_Items::network_callback_inventory_pos_update(Common_Messag
         data.m_ulItemID = item_id;
         callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.15);
 
-        PRINT_DEBUG("server got updated item inventory position: %llu 0x%08x", item_id, item_inv_pos);
+        PRINT_DEBUG("server got updated item inventory position: %llu 0x%08X", item_id, item_inv_pos);
         return;
     }
 
