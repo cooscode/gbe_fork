@@ -582,6 +582,13 @@ bool Steam_GameServer::BSetServerType( uint32 unServerFlags, uint32 unGameIP, ui
 
     flags = unServerFlags;
 
+    if (bLANMode) {
+        flags &= ~k_unServerFlagSecure;
+        flags |= k_unServerFlagPrivate;
+    } else {
+        flags &= ~k_unServerFlagPrivate;
+    }
+
     if (!settings->disable_source_query && !network->isQueryAlive())
         network->startQuery({ unGameIP, usQueryPort });
 
