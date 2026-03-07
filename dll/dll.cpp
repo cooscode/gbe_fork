@@ -1498,29 +1498,29 @@ SteamMasterServerUpdater
 */
 
 
-STEAMCLIENT_API steam_bool Steam_BGetCallback( HSteamPipe hSteamPipe, CallbackMsg_t *pCallbackMsg )
+bool steamclient_get_callback(HSteamPipe hSteamPipe, CallbackMsg_t *pCallbackMsg)
 {
-    PRINT_DEBUG("%i", hSteamPipe);
     SteamAPI_ManualDispatch_Init();
     Steam_Client *steam_client = get_steam_client();
     steam_client->RunCallbacks(true, true);
-    return SteamAPI_ManualDispatch_GetNextCallback( hSteamPipe, pCallbackMsg );
+    return SteamAPI_ManualDispatch_GetNextCallback(hSteamPipe, pCallbackMsg);
+}
+
+void steamclient_free_callback(HSteamPipe hSteamPipe)
+{
+    SteamAPI_ManualDispatch_FreeLastCallback(hSteamPipe);
+}
+
+STEAMCLIENT_API steam_bool Steam_BGetCallback( HSteamPipe hSteamPipe, CallbackMsg_t *pCallbackMsg )
+{
+    PRINT_DEBUG("%i", hSteamPipe);
+    return steamclient_get_callback(hSteamPipe, pCallbackMsg);
 }
 
 STEAMCLIENT_API void Steam_FreeLastCallback( HSteamPipe hSteamPipe )
 {
     //PRINT_DEBUG("%i", hSteamPipe);
-    SteamAPI_ManualDispatch_FreeLastCallback( hSteamPipe );
-}
-
-bool steamclient_get_callback(HSteamPipe hSteamPipe, CallbackMsg_t *pCallbackMsg)
-{
-    return Steam_BGetCallback(hSteamPipe, pCallbackMsg);
-}
-
-void steamclient_free_callback(HSteamPipe hSteamPipe)
-{
-    return Steam_FreeLastCallback(hSteamPipe);
+    steamclient_free_callback(hSteamPipe);
 }
 
 STEAMCLIENT_API steam_bool Steam_GetAPICallResult( HSteamPipe hSteamPipe, SteamAPICall_t hSteamAPICall, void* pCallback, int cubCallback, int iCallbackExpected, bool* pbFailed )
