@@ -273,10 +273,10 @@ bool Steam_User_Items::GetItemAttribute( uint64 ulItemID, uint32 unAttributeInde
 
 SteamAPICall_t Steam_User_Items::UpdateInventoryPos( uint64 ulItemID, uint32 unNewInventoryPos )
 {
-    PRINT_DEBUG("%llu 0x%08x", ulItemID, unNewInventoryPos);
+    PRINT_DEBUG("%llu 0x%08X", ulItemID, unNewInventoryPos);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    for (auto &item : items) {
+    for (Econ_Item &item : items) {
         if (item.id != ulItemID)
             continue;
 
@@ -430,7 +430,7 @@ void Steam_User_Items::network_callback_inventory_request(Common_Message *msg)
     new_msg.set_dest_id(server_steamid);
     network->sendTo(&new_msg, true);
 
-    PRINT_DEBUG("server requested inventory, sent %u items", items.size());
+    PRINT_DEBUG("server requested inventory, sent %u items", static_cast<uint32>(items.size()));
 }
 
 // only triggered when we have a message

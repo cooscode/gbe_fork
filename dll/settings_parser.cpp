@@ -523,40 +523,12 @@ static uint32 parse_steam_app_id(const std::string &program_path)
 {
     uint32 appid = 0;
 
-    // try steam_settings folder
-    char array[10] = {};
-    array[0] = '0';
-    Local_Storage::get_file_data(Local_Storage::get_game_settings_path() + "steam_appid.txt", array, sizeof(array) - 1);
-    try {
-        appid = std::stoul(array);
-    } catch (...) {}
-
-    // try current dir
-    if (!appid) {
-        memset(array, 0, sizeof(array));
-        array[0] = '0';
-        Local_Storage::get_file_data("steam_appid.txt", array, sizeof(array) - 1);
-        try {
-            appid = std::stoul(array);
-        } catch (...) {}
-    }
-
-    // try exe dir
-    if (!appid) {
-        memset(array, 0, sizeof(array));
-        array[0] = '0';
-        Local_Storage::get_file_data(program_path + "steam_appid.txt", array, sizeof(array) - 1);
-        try {
-            appid = std::stoul(array);
-        } catch (...) {}
-    }
-
     // try env vars
     if (!appid) {
         std::string str_appid = get_env_variable("SteamAppId");
         std::string str_gameid = get_env_variable("SteamGameId");
         std::string str_overlay_gameid = get_env_variable("SteamOverlayGameId");
-        
+
         PRINT_DEBUG("str_appid %s str_gameid: %s str_overlay_gameid: %s", str_appid.c_str(), str_gameid.c_str(), str_overlay_gameid.c_str());
         uint32 appid_env = 0;
         uint32 gameid_env = 0;
@@ -598,6 +570,34 @@ static uint32 parse_steam_app_id(const std::string &program_path)
         if (overlay_gameid) {
             appid = overlay_gameid;
         }
+    }
+
+    // try steam_settings folder
+    char array[10] = {};
+    array[0] = '0';
+    Local_Storage::get_file_data(Local_Storage::get_game_settings_path() + "steam_appid.txt", array, sizeof(array) - 1);
+    try {
+        appid = std::stoul(array);
+    } catch (...) {}
+
+    // try current dir
+    if (!appid) {
+        memset(array, 0, sizeof(array));
+        array[0] = '0';
+        Local_Storage::get_file_data("steam_appid.txt", array, sizeof(array) - 1);
+        try {
+            appid = std::stoul(array);
+        } catch (...) {}
+    }
+
+    // try exe dir
+    if (!appid) {
+        memset(array, 0, sizeof(array));
+        array[0] = '0';
+        Local_Storage::get_file_data(program_path + "steam_appid.txt", array, sizeof(array) - 1);
+        try {
+            appid = std::stoul(array);
+        } catch (...) {}
     }
 
     PRINT_DEBUG("final appid = %u", appid);
