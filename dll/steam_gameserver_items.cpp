@@ -16,41 +16,53 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "dll/steam_gameserver_items.h"
+#include "dll/dll.h"
 
-void Steam_GameServer_Items::steam_gameserver_items_network_callback(void *object, Common_Message *msg)
+Steam_Game_Coordinator *Steam_GameServer_Items::gc()
 {
-    //PRINT_DEBUG_ENTRY();
-
-    auto inst = (Steam_GameServer_Items *)object;
-    inst->network_callback(msg);
+    return get_steam_client()->steam_gameserver_game_coordinator;
 }
 
-void Steam_GameServer_Items::steam_gameserver_items_run_every_runcb(void *object)
-{
-    //PRINT_DEBUG_ENTRY();
-
-    auto inst = (Steam_GameServer_Items *)object;
-    inst->run_callbacks();
-}
-
-Steam_GameServer_Items::Steam_GameServer_Items(class Settings *settings, class Networking *network, class SteamCallBacks *callbacks, class SteamCallResults *callback_results, class RunEveryRunCB *run_every_runcb)
+Steam_GameServer_Items::Steam_GameServer_Items(class Settings *settings, class SteamCallBacks *callbacks, class SteamCallResults *callback_results)
 {
     this->settings = settings;
-    this->network = network;
     this->callbacks = callbacks;
     this->callback_results = callback_results;
-    this->run_every_runcb = run_every_runcb;
-
-    this->network->setCallback(CALLBACK_ID_GAMESERVER_ITEMS, settings->get_local_steam_id(), &Steam_GameServer_Items::steam_gameserver_items_network_callback, this);
-    this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_GameServer_Items::steam_gameserver_items_network_callback, this);
-    this->run_every_runcb->add(Steam_GameServer_Items::steam_gameserver_items_run_every_runcb, this);
 }
 
 Steam_GameServer_Items::~Steam_GameServer_Items()
 {
-    this->network->rmCallback(CALLBACK_ID_GAMESERVER_ITEMS, settings->get_local_steam_id(), &Steam_GameServer_Items::steam_gameserver_items_network_callback, this);
-    this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_GameServer_Items::steam_gameserver_items_network_callback, this);
-    this->run_every_runcb->remove(Steam_GameServer_Items::steam_gameserver_items_run_every_runcb, this);
+}
+
+void Steam_GameServer_Items::on_items_received(CSteamID steam_id, size_t num_items, SteamAPICall_t api_call, bool success)
+{
+    GSItemCount_t data{};
+    data.m_OwnerID = steam_id;
+    if (success) {
+        data.m_eResult = k_EItemRequestResultOK;
+        data.m_unCount = static_cast<uint32>(num_items);
+    } else {
+        data.m_eResult = k_EItemRequestResultTimeout;
+        data.m_unCount = 0;
+    }
+    callback_results->addCallResult(api_call, data.k_iCallback, &data, sizeof(data));
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+}
+
+void Steam_GameServer_Items::on_item_pos_updated(CSteamID steam_id, uint64 item_id, uint32 inv_pos)
+{
+    GSItemInventoryPosUpdated_t data{};
+    data.m_SteamID = steam_id;
+    data.m_ulItemID = item_id;
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.15);
+}
+
+void Steam_GameServer_Items::on_item_deleted(CSteamID steam_id, uint64 item_id)
+{
+    GSItemDeleted_t data{};
+    data.m_SteamID = steam_id;
+    data.m_ulItemID = item_id;
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.15);
 }
 
 SteamAPICall_t Steam_GameServer_Items::LoadItems( CSteamID ownerID )
@@ -58,9 +70,9 @@ SteamAPICall_t Steam_GameServer_Items::LoadItems( CSteamID ownerID )
     PRINT_DEBUG("%llu", ownerID.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    // see if we already have their inventory cached
-    if (all_user_items.count(ownerID)) {
-        const auto &items = all_user_items.at(ownerID);
+    // See if we already have their inventory cached.
+    if (gc()->has_items_for_user(ownerID)) {
+        const auto &items = gc()->get_items_for_user(ownerID);
 
         GSItemCount_t data{};
         data.m_OwnerID = ownerID;
@@ -71,27 +83,15 @@ SteamAPICall_t Steam_GameServer_Items::LoadItems( CSteamID ownerID )
         return ret;
     }
 
-    // request inventory from this player
-    RequestInventory new_request{};
-    new_request.created = std::chrono::high_resolution_clock::now();
-    new_request.steam_id = ownerID;
-    new_request.steam_api_call = callback_results->reserveCallResult();
-    pending_items_requests.push_back(new_request);
+    // See if we've already requested their inventory.
+    SteamAPICall_t ret = gc()->find_items_request(ownerID);
+    if (ret != k_uAPICallInvalid)
+        return ret;
 
-    auto request_msg = new GameServer_Items_Messages::InventoryRequest();
-    request_msg->set_steam_api_call(new_request.steam_api_call);
-
-    auto gameserver_items_msg = new GameServer_Items_Messages();
-    gameserver_items_msg->set_type(GameServer_Items_Messages::Request_Inventory);
-    gameserver_items_msg->set_allocated_inventory_request(request_msg);
-
-    Common_Message msg{};
-    msg.set_allocated_gameserver_items_messages(gameserver_items_msg);
-    msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
-    msg.set_dest_id(ownerID.ConvertToUint64());
-    network->sendTo(&msg, true);
-
-    return new_request.steam_api_call;
+    // Request inventory from this player.
+    ret = callback_results->reserveCallResult();
+    gc()->request_user_items(ownerID, ret, false);
+    return ret;
 }
 
 void Steam_GameServer_Items::LoadItems_old( CSteamID ownerID )
@@ -117,10 +117,10 @@ bool Steam_GameServer_Items::GetItemIterative( CSteamID ownerID, uint32 iIndex, 
     PRINT_DEBUG("%u", iIndex);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if (!all_user_items.count(ownerID))
+    if (!gc()->has_items_for_user(ownerID))
         return false;
 
-    const auto &items = all_user_items.at(ownerID);
+    const auto &items = gc()->get_items_for_user(ownerID);
     if (iIndex >= items.size())
         return false;
 
@@ -148,7 +148,7 @@ bool Steam_GameServer_Items::GetItemByID( uint64 ulItemID, CSteamID *pOwnerID, u
     PRINT_DEBUG("%llu", ulItemID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    for (const auto &[steam_id, items] : all_user_items) {
+    for (const auto &[steam_id, items] : gc()->get_all_user_items()) {
         for (const Econ_Item &item : items) {
             if (item.id != ulItemID)
                 continue;
@@ -181,7 +181,7 @@ bool Steam_GameServer_Items::GetItemAttribute( uint64 ulItemID, uint32 unAttribu
     PRINT_DEBUG("%llu %u", ulItemID, unAttributeIndex);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    for (const auto &[steamID, items] : all_user_items) {
+    for (const auto &[steamID, items] : gc()->get_all_user_items()) {
         for (const Econ_Item &item : items) {
             if (item.id != ulItemID)
                 continue;
@@ -311,203 +311,4 @@ SteamAPICall_t Steam_GameServer_Items::SetItemBlob( uint64 ulItemID, const void 
 {
     PRINT_DEBUG_TODO();
     return k_uAPICallInvalid;
-}
-
-// user sent their inventory
-void Steam_GameServer_Items::network_callback_inventory_response(Common_Message *msg)
-{
-    uint64 user_steamid = msg->source_id();
-
-    PRINT_DEBUG("player sent their inventory %llu", user_steamid);
-    if (!msg->gameserver_items_messages().has_inventory_response()) {
-        PRINT_DEBUG("error empty msg");
-        return;
-    }
-
-    const auto &response_msg = msg->gameserver_items_messages().inventory_response();
-
-    // find this pending request
-    auto it = std::find_if(
-        pending_items_requests.begin(), pending_items_requests.end(),
-        [=](const RequestInventory &item) {
-            return item.steam_api_call == response_msg.steam_api_call() &&
-                item.steam_id == user_steamid;
-        }
-    );
-    if (pending_items_requests.end() == it) { // timeout and already removed
-        PRINT_DEBUG("error got player inventory but pending request timedout/removed (doesn't exist)");
-        return;
-    }
-
-    auto &items = all_user_items[user_steamid];
-    items.clear();
-
-    for (const auto &item : response_msg.items()) {
-        Econ_Item new_item;
-        new_item.id = item.id();
-        new_item.def = item.def();
-        new_item.level = item.level();
-        new_item.quality = static_cast<EItemQuality>(item.quality());
-        new_item.inv_pos = item.inv_pos();
-        new_item.quantity = item.quantity();
-        if (new_item.id == 0)
-            continue;
-
-        for (const auto &attr : item.attributes()) {
-            Econ_Item_Attribute new_attr;
-            new_attr.def = attr.def();
-            new_attr.value = attr.value();
-            if (new_attr.def == 0)
-                continue;
-
-            new_item.attributes.push_back(new_attr);
-        }
-
-        items.push_back(new_item);
-    }
-
-    GSItemCount_t data{};
-    data.m_OwnerID = user_steamid;
-    data.m_eResult = k_EItemRequestResultOK;
-    data.m_unCount = static_cast<uint32>(items.size());
-    callback_results->addCallResult(it->steam_api_call, data.k_iCallback, &data, sizeof(data));
-    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
-
-    // remove this pending request
-    pending_items_requests.erase(it);
-
-    PRINT_DEBUG("server got player inventory: %u items", response_msg.items_size());
-}
-
-// user updated item inventory position
-void Steam_GameServer_Items::network_callback_inventory_pos_update(Common_Message *msg)
-{
-    uint64 user_steamid = msg->source_id();
-
-    PRINT_DEBUG("player updated item inventory position %llu", user_steamid);
-    if (!msg->gameserver_items_messages().has_inventory_pos_update()) {
-        PRINT_DEBUG("error empty msg");
-        return;
-    }
-
-    if (!all_user_items.count(user_steamid)) {
-        PRINT_DEBUG("error no inventory for player", user_steamid);
-        return;
-    }
-
-    const auto &inventory_msg = msg->gameserver_items_messages().inventory_pos_update();
-    uint64 item_id = inventory_msg.item_id();
-    uint32 item_inv_pos = inventory_msg.item_inv_pos();
-
-    auto &items = all_user_items.at(user_steamid);
-
-    for (Econ_Item &item : items) {
-        if (item.id != item_id)
-            continue;
-
-        item.inv_pos = item_inv_pos;
-
-        GSItemInventoryPosUpdated_t data{};
-        data.m_SteamID = user_steamid;
-        data.m_ulItemID = item_id;
-        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.15);
-
-        PRINT_DEBUG("server got updated item inventory position: %llu 0x%08X", item_id, item_inv_pos);
-        return;
-    }
-
-    PRINT_DEBUG("error item %llu not found", item_id);
-}
-
-// user deleted an item
-void Steam_GameServer_Items::network_callback_item_deletion(Common_Message *msg)
-{
-    uint64 user_steamid = msg->source_id();
-
-    PRINT_DEBUG("player deleted inventory item %llu", user_steamid);
-    if (!msg->gameserver_items_messages().has_item_deletion()) {
-        PRINT_DEBUG("error empty msg");
-        return;
-    }
-
-    if (!all_user_items.count(user_steamid)) {
-        PRINT_DEBUG("error no inventory for player", user_steamid);
-        return;
-    }
-
-    const auto &drop_msg = msg->gameserver_items_messages().item_deletion();
-    uint64 item_id = drop_msg.item_id();
-
-    auto &items = all_user_items.at(user_steamid);
-
-    for (auto it = items.begin(); it != items.end(); it++) {
-        if (it->id != item_id)
-            continue;
-
-        items.erase(it);
-
-        GSItemDeleted_t data{};
-        data.m_SteamID = user_steamid;
-        data.m_ulItemID = item_id;
-        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.15);
-
-        PRINT_DEBUG("server deleted inventory item: %llu", item_id);
-        return;
-    }
-
-    PRINT_DEBUG("error item %llu not found", item_id);
-}
-
-// only triggered when we have a message
-void Steam_GameServer_Items::network_callback(Common_Message *msg)
-{
-    // this should never happen, but just in case
-    if (msg->source_id() == settings->get_local_steam_id().ConvertToUint64()) return;
-
-    if (msg->has_gameserver_items_messages()) {
-        switch (msg->gameserver_items_messages().type()) {
-        // user sent their inventory
-        case GameServer_Items_Messages::Response_Inventory:
-            network_callback_inventory_response(msg);
-        break;
-
-        // user updated item inventory position
-        case GameServer_Items_Messages::Request_UpdateInventoryPos:
-            network_callback_inventory_pos_update(msg);
-        break;
-
-        // user deleted an item
-        case GameServer_Items_Messages::Request_DeleteItem:
-            network_callback_item_deletion(msg);
-        break;
-
-        default:
-            PRINT_DEBUG("unhandled type %i", (int)msg->gameserver_items_messages().type());
-        break;
-        }
-    } else if (msg->has_low_level()) {
-        if (msg->low_level().type() == Low_Level::DISCONNECT) {
-            uint64 user_steamid = msg->source_id();
-            all_user_items.erase(user_steamid);
-        }
-    }
-}
-
-void Steam_GameServer_Items::run_callbacks()
-{
-    for (auto it = pending_items_requests.begin(); it != pending_items_requests.end();) {
-        if (check_timedout(it->created, 7.0)) {
-            GSItemCount_t data{};
-            data.m_OwnerID = it->steam_id;
-            data.m_eResult = k_EItemRequestResultTimeout;
-            data.m_unCount = 0;
-            callback_results->addCallResult(it->steam_api_call, data.k_iCallback, &data, sizeof(data));
-            callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
-
-            PRINT_DEBUG("player inventory request timeout %llu", it->steam_id);
-            it = pending_items_requests.erase(it);
-        } else {
-            it++;
-        }
-    }
 }

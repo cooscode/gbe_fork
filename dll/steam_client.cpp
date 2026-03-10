@@ -126,7 +126,7 @@ Steam_Client::Steam_Client()
     steam_networking_sockets = new Steam_Networking_Sockets(settings_client, network, callback_results_client, callbacks_client, run_every_runcb, NULL);
     steam_networking_sockets_serialized = new Steam_Networking_Sockets_Serialized(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
     steam_networking_messages = new Steam_Networking_Messages(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
-    steam_game_coordinator = new Steam_Game_Coordinator(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
+    steam_game_coordinator = new Steam_Game_Coordinator(settings_client, network, local_storage, callbacks_client, run_every_runcb, false);
     steam_networking_utils = new Steam_Networking_Utils(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
     steam_unified_messages = new Steam_Unified_Messages(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
     steam_game_search = new Steam_Game_Search(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
@@ -137,7 +137,7 @@ Steam_Client::Steam_Client()
     steam_timeline = new Steam_Timeline(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
     steam_app_disable_update = new Steam_App_Disable_Update(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
     steam_billing = new Steam_Billing(settings_client, network, callback_results_client, callbacks_client, run_every_runcb);
-    steam_user_items = new Steam_User_Items(settings_client, network, local_storage, callbacks_client, callback_results_client);
+    steam_user_items = new Steam_User_Items(settings_client, callbacks_client, callback_results_client);
 
     // server
     PRINT_DEBUG("init gameserver");
@@ -154,10 +154,10 @@ Steam_Client::Steam_Client()
     steam_gameserver_networking_sockets = new Steam_Networking_Sockets(settings_server, network, callback_results_server, callbacks_server, run_every_runcb, steam_networking_sockets->get_shared_between_client_server());
     steam_gameserver_networking_sockets_serialized = new Steam_Networking_Sockets_Serialized(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
     steam_gameserver_networking_messages = new Steam_Networking_Messages(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
-    steam_gameserver_game_coordinator = new Steam_Game_Coordinator(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
+    steam_gameserver_game_coordinator = new Steam_Game_Coordinator(settings_server, network, local_storage, callbacks_server, run_every_runcb, true);
     steam_masterserver_updater = new Steam_Masterserver_Updater(settings_server, network, callback_results_server, callbacks_server, run_every_runcb, steam_gameserver);
     steam_gameserver_gamestats = new Steam_GameStats(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
-    steam_gameserver_items = new Steam_GameServer_Items(settings_server, network, callbacks_server, callback_results_server, run_every_runcb);
+    steam_gameserver_items = new Steam_GameServer_Items(settings_server, callbacks_server, callback_results_server);
 
     PRINT_DEBUG("init AppTicket");
     steam_app_ticket = new Steam_AppTicket(settings_client);
@@ -347,6 +347,9 @@ HSteamUser Steam_Client::ConnectToGlobalUser( HSteamPipe hSteamPipe )
     }
 
     userLogIn();
+
+    // initialize GC now so that we have user's inventory ready right away
+    steam_game_coordinator->initialize_gc();
     
     // games like appid 1740720 and 2379780 do not call SteamAPI_RunCallbacks() or SteamAPI_ManualDispatch_RunFrame() or Steam_BGetCallback()
     // hence all run_callbacks() will never run, which might break the assumption that these callbacks are always run

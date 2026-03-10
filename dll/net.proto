@@ -337,6 +337,11 @@ message GameServer_Items_Messages {
         uint32 inv_pos = 5;
         uint32 quantity = 6;
         repeated Attribute attributes = 7;
+        uint32 flags = 8;
+        uint32 origin = 9;
+        string custom_name = 10;
+        string custom_desc = 11;
+        uint64 original_id = 12;
     }
     message InventoryRequest {
         uint64 steam_api_call = 1;
@@ -358,14 +363,16 @@ message GameServer_Items_Messages {
         Response_Inventory = 1;
         Request_UpdateInventoryPos = 2;
         Request_DeleteItem = 3;
+        Request_Respawn = 4;
     }
 
     Types type = 1;
+    bool is_gc = 2;
     oneof data_messages {
-        InventoryRequest inventory_request = 2;
-        InventoryResponse inventory_response = 3;
-        InventoryPosUpdate inventory_pos_update = 4;
-        ItemDeletion item_deletion = 5;
+        InventoryRequest inventory_request = 3;
+        InventoryResponse inventory_response = 4;
+        InventoryPosUpdate inventory_pos_update = 5;
+        ItemDeletion item_deletion = 6;
     }
 }
 
