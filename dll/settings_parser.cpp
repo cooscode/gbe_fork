@@ -573,9 +573,9 @@ static uint32 parse_steam_app_id(const std::string &program_path)
     }
 
     // try steam_settings folder
+    char array[10] = {};
+    array[0] = '0';
     if (!appid) {
-        char array[10] = {};
-        array[0] = '0';
         Local_Storage::get_file_data(Local_Storage::get_game_settings_path() + "steam_appid.txt", array, sizeof(array) - 1);
         try {
             appid = std::stoul(array);
