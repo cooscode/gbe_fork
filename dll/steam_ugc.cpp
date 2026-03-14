@@ -1808,3 +1808,27 @@ bool Steam_UGC::SetSubscriptionsLoadOrder( PublishedFileId_t *pvecPublishedFileI
 
     return true;
 }
+
+// Tells the client to no longer try to keep the item in its local cache, unless it was subscribed to by other users on this machine
+bool Steam_UGC::MarkDownloadedItemAsUnused(PublishedFileId_t nPublishedFileID)
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    return false;
+}
+
+// Returns the number of items actually downloaded locally
+uint32 Steam_UGC::GetNumDownloadedItems()
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    return 0;
+}
+
+// Returns the ids of the items downloaded
+uint32 Steam_UGC::GetDownloadedItems(PublishedFileId_t* pvecPublishedFileIDs, uint32 cMaxEntries)
+{
+    PRINT_DEBUG_TODO();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    return 0;
+}

@@ -630,6 +630,8 @@ ISteamApps *Steam_Client::GetISteamApps( HSteamUser hSteamUser, HSteamPipe hStea
         return reinterpret_cast<ISteamApps *>(static_cast<ISteamApps006 *>(steam_apps_temp));
     } else if (strcmp(pchVersion, "STEAMAPPS_INTERFACE_VERSION007") == 0) {
         return reinterpret_cast<ISteamApps *>(static_cast<ISteamApps007 *>(steam_apps_temp));
+    } else if (strcmp(pchVersion, "STEAMAPPS_INTERFACE_VERSION008") == 0) {
+        return reinterpret_cast<ISteamApps*>(static_cast<ISteamApps008 *>(steam_apps_temp));
     } else if (strcmp(pchVersion, STEAMAPPS_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamApps *>(static_cast<ISteamApps *>(steam_apps_temp));
     }
@@ -1059,6 +1061,8 @@ ISteamRemotePlay *Steam_Client::GetISteamRemotePlay( HSteamUser hSteamUser, HSte
         return reinterpret_cast<ISteamRemotePlay *>(static_cast<ISteamRemotePlay001 *>(steam_remoteplay));
     } else if (strcmp(pchVersion, "STEAMREMOTEPLAY_INTERFACE_VERSION002") == 0) {
         return reinterpret_cast<ISteamRemotePlay *>(static_cast<ISteamRemotePlay002 *>(steam_remoteplay));
+    } else if (strcmp(pchVersion, "STEAMREMOTEPLAY_INTERFACE_VERSION003") == 0) {
+        return reinterpret_cast<ISteamRemotePlay*>(static_cast<ISteamRemotePlay003 *>(steam_remoteplay));
     } else if (strcmp(pchVersion, STEAMREMOTEPLAY_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamRemotePlay *>(static_cast<ISteamRemotePlay *>(steam_remoteplay));
     }

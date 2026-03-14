@@ -614,7 +614,8 @@ int Steam_Apps::GetNumBetas( int *pnAvailable, int *pnPrivate )
 
 // TODO no public docs
 // return beta branch details, name, description, current BuildID and state flags (EBetaBranchFlags)
-bool Steam_Apps::GetBetaInfo( int iBetaIndex, uint32 *punFlags, uint32 *punBuildID, char *pchBetaName, int cchBetaName, char *pchDescription, int cchDescription ) // iterate through
+// iterate through
+bool Steam_Apps::GetBetaInfo( int iBetaIndex, uint32 *punFlags, uint32 *punBuildID, char *pchBetaName, int cchBetaName, char *pchDescription, int cchDescription )
 {
     // I assume this API is like "Steam_User_Stats::GetNextMostAchievedAchievementInfo()", it returns 'ok' until index is out of range
     PRINT_DEBUG("[%i] %p %p --- %p %i --- %p %i", iBetaIndex, punFlags, punBuildID, pchBetaName, cchBetaName, pchDescription, cchDescription);
@@ -628,6 +629,34 @@ bool Steam_Apps::GetBetaInfo( int iBetaIndex, uint32 *punFlags, uint32 *punBuild
     if (punFlags) *punFlags = branch.flags;
     if (punBuildID) *punBuildID = branch.build_id;
     
+    if (pchBetaName && cchBetaName > 0 && static_cast<size_t>(cchBetaName) > branch.name.size()) {
+        memset(pchBetaName, 0, cchBetaName);
+        memcpy(pchBetaName, branch.name.c_str(), branch.name.size());
+    }
+
+    if (pchDescription && cchDescription > 0 && static_cast<size_t>(cchDescription) > branch.description.size()) {
+        memset(pchDescription, 0, cchDescription);
+        memcpy(pchDescription, branch.description.c_str(), branch.description.size());
+    }
+
+    return true;
+}
+
+bool Steam_Apps::GetBetaInfo(int iBetaIndex, uint32* punFlags, uint32* punBuildID, char* pchBetaName, int cchBetaName, char* pchDescription, int cchDescription, uint32* punLastUpdated)
+{
+    // I assume this API is like "Steam_User_Stats::GetNextMostAchievedAchievementInfo()", it returns 'ok' until index is out of range
+    PRINT_DEBUG("[%i] %p %p --- %p %i --- %p %i --- %p", iBetaIndex, punFlags, punBuildID, pchBetaName, cchBetaName, pchDescription, cchDescription, punLastUpdated);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    if (iBetaIndex < 0) return false;
+    if (static_cast<size_t>(iBetaIndex) >= settings->branches.size()) return false;
+
+    const auto& branch = settings->branches[iBetaIndex];
+
+    if (punFlags) *punFlags = branch.flags;
+    if (punBuildID) *punBuildID = branch.build_id;
+    if (punLastUpdated) *punLastUpdated = branch.time_updated_epoch;
+
     if (pchBetaName && cchBetaName > 0 && static_cast<size_t>(cchBetaName) > branch.name.size()) {
         memset(pchBetaName, 0, cchBetaName);
         memcpy(pchBetaName, branch.name.c_str(), branch.name.size());
