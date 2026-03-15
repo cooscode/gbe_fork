@@ -21,6 +21,8 @@
 #include "base.h"
 #include "econ_item.h"
 
+class Steam_Game_Coordinator;
+
 class Steam_GameServer_Items :
 public ISteamGameServerItems001,
 public ISteamGameServerItems002,
@@ -28,33 +30,18 @@ public ISteamGameServerItems003,
 public ISteamGameServerItems
 {
     class Settings *settings{};
-    class Networking *network{};
     class SteamCallBacks *callbacks{};
     class SteamCallResults *callback_results{};
-    class RunEveryRunCB *run_every_runcb{};
 
-    struct RequestInventory
-    {
-        std::chrono::high_resolution_clock::time_point created{};
-        CSteamID steam_id{};
-        SteamAPICall_t steam_api_call;
-    };
-
-    std::map<CSteamID, std::vector<Econ_Item>> all_user_items;
-    std::vector<RequestInventory> pending_items_requests{};
-
-    void network_callback_inventory_response(Common_Message *msg);
-    void network_callback_inventory_pos_update(Common_Message *msg);
-    void network_callback_item_deletion(Common_Message *msg);
-    void network_callback(Common_Message *msg);
-    void run_callbacks();
-
-    static void steam_gameserver_items_network_callback(void *object, Common_Message *msg);
-    static void steam_gameserver_items_run_every_runcb(void *object);
+    Steam_Game_Coordinator *gc();
 
 public:
-    Steam_GameServer_Items(class Settings *settings, class Networking *network, class SteamCallBacks *callbacks, class SteamCallResults *callback_results, class RunEveryRunCB *run_every_runcb);
+    Steam_GameServer_Items(class Settings *settings, class SteamCallBacks *callbacks, class SteamCallResults *callback_results);
     ~Steam_GameServer_Items();
+
+    void on_items_received(CSteamID steam_id, size_t num_items, SteamAPICall_t api_call, bool success);
+    void on_item_pos_updated(CSteamID steam_id, uint64 item_id, uint32 inv_pos);
+    void on_item_deleted(CSteamID steam_id, uint64 item_id);
 
     SteamAPICall_t LoadItems( CSteamID ownerID );
     void LoadItems_old( CSteamID ownerID );

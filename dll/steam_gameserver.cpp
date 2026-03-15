@@ -70,6 +70,7 @@ bool Steam_GameServer::set_appid(int32 input_appid, const char *game_dir, bool a
     server_data.set_appid(appid);
     settings->set_game_id(CGameID(appid));
     network->setAppID(appid);
+    get_steam_client()->steam_gameserver_game_coordinator->initialize_gc();
 
     PRINT_DEBUG("set server appid to %u", appid);
     return true;
@@ -109,6 +110,8 @@ void Steam_GameServer::add_player(CSteamID steamID)
     infos.second.score = 0;
     infos.second.name = "unnamed";
     players.emplace_back(std::move(infos));
+
+    get_steam_client()->steam_gameserver_game_coordinator->on_client_connected(steamID);
 }
 
 void Steam_GameServer::remove_player(CSteamID steamID)
@@ -119,6 +122,8 @@ void Steam_GameServer::remove_player(CSteamID steamID)
 
     if (player_it != players.end()) {
         players.erase(player_it);
+
+        get_steam_client()->steam_gameserver_game_coordinator->on_client_disconnected(steamID);
     }
 }
 
@@ -678,8 +683,13 @@ EBeginAuthSessionResult Steam_GameServer::BeginAuthSession( const void *pAuthTic
     PRINT_DEBUG("%i %llu", cbAuthTicket, steamID.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    add_player(steamID);
-    return auth_manager->beginAuth(pAuthTicket, cbAuthTicket, steamID );
+    EBeginAuthSessionResult res = auth_manager->beginAuth(pAuthTicket, cbAuthTicket, steamID );
+
+    if (res == k_EBeginAuthSessionResultOK) {
+        add_player(steamID);
+    }
+
+    return res;
 }
 
 

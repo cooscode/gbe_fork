@@ -21,33 +21,22 @@
 #include "base.h"
 #include "econ_item.h"
 
+class Steam_Game_Coordinator;
+
 class Steam_User_Items :
 public ISteamUserItems001,
 public ISteamUserItems002,
 public ISteamUserItems003,
 public ISteamUserItems
 {
-    static constexpr const auto items_user_file = "items.json";
-
     class Settings *settings{};
-    class Networking *network{};
-    class Local_Storage *local_storage{};
     class SteamCallBacks *callbacks{};
     class SteamCallResults *callback_results{};
 
-    std::vector<Econ_Item> items;
-    bool items_loaded{};
-
-    void network_callback_inventory_request(Common_Message *msg);
-    void network_callback(Common_Message *msg);
-
-    static void steam_user_items_network_callback(void *object, Common_Message *msg);
-
-    void load_items_from_file();
-    void save_items_to_file();
+    Steam_Game_Coordinator *gc();
 
 public:
-    Steam_User_Items(class Settings *settings, class Networking *network, class Local_Storage *local_storage, class SteamCallBacks *callbacks, class SteamCallResults *callback_results);
+    Steam_User_Items(class Settings *settings, class SteamCallBacks *callbacks, class SteamCallResults *callback_results);
     ~Steam_User_Items();
 
     SteamAPICall_t LoadItems();
