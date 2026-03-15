@@ -524,61 +524,61 @@ static uint32 parse_steam_app_id(const std::string &program_path)
     uint32 appid = 0;
 
     // try env vars
-    if (!appid) {
-        std::string str_appid = get_env_variable("SteamAppId");
-        std::string str_gameid = get_env_variable("SteamGameId");
-        std::string str_overlay_gameid = get_env_variable("SteamOverlayGameId");
+    std::string str_appid = get_env_variable("SteamAppId");
+    std::string str_gameid = get_env_variable("SteamGameId");
+    std::string str_overlay_gameid = get_env_variable("SteamOverlayGameId");
 
-        PRINT_DEBUG("str_appid %s str_gameid: %s str_overlay_gameid: %s", str_appid.c_str(), str_gameid.c_str(), str_overlay_gameid.c_str());
-        uint32 appid_env = 0;
-        uint32 gameid_env = 0;
-        uint32 overlay_gameid = 0;
+    PRINT_DEBUG("str_appid %s str_gameid: %s str_overlay_gameid: %s", str_appid.c_str(), str_gameid.c_str(), str_overlay_gameid.c_str());
+    uint32 appid_env = 0;
+    uint32 gameid_env = 0;
+    uint32 overlay_gameid = 0;
 
-        if (str_appid.size() > 0) {
-            try {
-                appid_env = std::stoul(str_appid);
-            } catch (...) {
-                appid_env = 0;
-            }
+    if (str_appid.size() > 0) {
+        try {
+            appid_env = std::stoul(str_appid);
+        } catch (...) {
+            appid_env = 0;
         }
+    }
 
-        if (str_gameid.size() > 0) {
-            try {
-                gameid_env = std::stoul(str_gameid);
-            } catch (...) {
-                gameid_env = 0;
-            }
+    if (str_gameid.size() > 0) {
+        try {
+            gameid_env = std::stoul(str_gameid);
+        } catch (...) {
+            gameid_env = 0;
         }
+    }
 
-        if (str_overlay_gameid.size() > 0) {
-            try {
-                overlay_gameid = std::stoul(str_overlay_gameid);
-            } catch (...) {
-                overlay_gameid = 0;
-            }
+    if (str_overlay_gameid.size() > 0) {
+        try {
+            overlay_gameid = std::stoul(str_overlay_gameid);
+        } catch (...) {
+            overlay_gameid = 0;
         }
+    }
 
-        PRINT_DEBUG("appid_env %u gameid_env: %u overlay_gameid: %u", appid_env, gameid_env, overlay_gameid);
-        if (appid_env) {
-            appid = appid_env;
-        }
+    PRINT_DEBUG("appid_env %u gameid_env: %u overlay_gameid: %u", appid_env, gameid_env, overlay_gameid);
+    if (appid_env) {
+        appid = appid_env;
+    }
 
-        if (gameid_env) {
-            appid = gameid_env;
-        }
+    if (gameid_env) {
+        appid = gameid_env;
+    }
 
-        if (overlay_gameid) {
-            appid = overlay_gameid;
-        }
+    if (overlay_gameid) {
+        appid = overlay_gameid;
     }
 
     // try steam_settings folder
     char array[10] = {};
     array[0] = '0';
-    Local_Storage::get_file_data(Local_Storage::get_game_settings_path() + "steam_appid.txt", array, sizeof(array) - 1);
-    try {
-        appid = std::stoul(array);
-    } catch (...) {}
+    if (!appid) {
+        Local_Storage::get_file_data(Local_Storage::get_game_settings_path() + "steam_appid.txt", array, sizeof(array) - 1);
+        try {
+            appid = std::stoul(array);
+        } catch (...) {}
+    }
 
     // try current dir
     if (!appid) {
