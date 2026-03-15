@@ -518,6 +518,14 @@ static void load_gamecontroller_settings(Settings *settings)
     settings->glyphs_directory = path + (PATH_SEPARATOR "glyphs" PATH_SEPARATOR);
 }
 
+//controller type override
+static void parse_controller_type_override(class Settings *settings_client)
+{
+    std::string type(common_helpers::to_upper(common_helpers::string_strip(ini.GetValue("app::controller", "type", ""))));
+    settings_client->controller_type_override = type;
+    PRINT_DEBUG("Setting Controller type override to: '%s'", type.c_str());
+}
+
 // steam_appid.txt
 static uint32 parse_steam_app_id(const std::string &program_path)
 {
@@ -1945,6 +1953,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
 
     parse_mods_folder(settings_client, settings_server, local_storage);
     load_gamecontroller_settings(settings_client);
+    parse_controller_type_override(settings_client);
     parse_auto_accept_invite(settings_client, settings_server);
     parse_auto_send_invite(settings_client, settings_server);
     parse_ip_country(local_storage, settings_client, settings_server);
