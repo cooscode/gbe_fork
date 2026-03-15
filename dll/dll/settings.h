@@ -322,7 +322,7 @@ public:
     //controller
     struct Controller_Settings controller_settings{};
     std::string glyphs_directory{};
-
+    std::string controller_type_override;
 
     // allow Steam_User_Stats::FindLeaderboard() to always succeed and create the given unknown leaderboard
     bool disable_leaderboards_create_unknown = false;
