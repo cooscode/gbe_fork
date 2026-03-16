@@ -1095,7 +1095,7 @@ ESteamInputType Steam_Controller::GetInputTypeForHandle( ControllerHandle_t cont
     if (settings->controller_settings.controller_type_override == "XBOX360") return k_ESteamInputType_XBox360Controller;
     if (settings->controller_settings.controller_type_override == "XBOXONE") return k_ESteamInputType_XBoxOneController;
     // Nintendo
-    if (settings->controller_settings.controller_type_override == "SWITCHPRO") return k_ESteamInputType_SwitchProController;
+    if (settings->controller_settings.controller_type_override == "SWITCH") return k_ESteamInputType_SwitchProController;
 
     return k_ESteamInputType_XBox360Controller;
 }

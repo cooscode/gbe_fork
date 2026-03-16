@@ -526,8 +526,12 @@ static void parse_controller_config(class Settings *settings_client)
     
     bool enabled = ini.GetBoolValue("app::controller", "steam_input", false);
     settings_client->controller_settings.enabled = enabled;
-    if (enabled) PRINT_DEBUG("Enable SteamInput");
-    else PRINT_DEBUG("Disable SteamInput");   
+    if (enabled) {
+        PRINT_DEBUG("Enable SteamInput");
+    }
+    else {
+        PRINT_DEBUG("Disable SteamInput");
+    }
 }
 
 // steam_appid.txt
