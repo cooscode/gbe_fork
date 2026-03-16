@@ -948,7 +948,17 @@ void Steam_GameServer::RunCallbacks()
         Common_Message msg{};
         msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
         msg.set_allocated_gameserver(new Gameserver(server_data));
-        //msg.mutable_gameserver()->set_num_players(auth_manager->countInboundAuth());
+
+        // Fill player list and calculate their playtime.
+        auto cur_time = std::chrono::steady_clock::now();
+
+        for (const auto &[steam_id, info] : players) {
+            auto new_player = msg.mutable_gameserver()->add_players();
+            new_player->set_name(info.name);
+            new_player->set_score(info.score);
+            new_player->set_playtime(std::chrono::duration<float>(cur_time - info.join_time).count());
+        }
+
         network->sendToAllIndividuals(&msg, true);
         last_sent_server_info = std::chrono::high_resolution_clock::now();
     }
