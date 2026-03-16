@@ -57,16 +57,15 @@ public ISteamGameServer
     class Networking *network{};
     class SteamCallBacks *callbacks{};
 
-    CSteamID steam_id{};
-
-    bool call_servers_connected = false;
-    bool logged_in = false;
-    bool call_servers_disconnected = false;
+    bool call_servers_connected{};
+    std::chrono::high_resolution_clock::time_point logon_time{};
+    bool call_servers_disconnected{};
+    std::chrono::high_resolution_clock::time_point logoff_time{};
+    bool logged_in{};
     Gameserver server_data{};
     std::vector<std::pair<CSteamID, Gameserver_Player_Info_t>> players{};
 
     uint32 flags{};
-    bool policy_response_called{};
 
     std::chrono::high_resolution_clock::time_point last_sent_server_info{};
     Auth_Manager *auth_manager{};
