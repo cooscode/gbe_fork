@@ -521,8 +521,13 @@ static void load_gamecontroller_settings(Settings *settings)
 static void parse_controller_config(class Settings *settings_client)
 {
     std::string type(common_helpers::to_upper(common_helpers::string_strip(ini.GetValue("app::controller", "type", ""))));
-    settings->controller_settings.controller_type_override = type;
+    settings_client->controller_settings.controller_type_override = type;
     PRINT_DEBUG("Setting Controller type override to: '%s'", type.c_str());
+    
+    bool enabled = ini.GetBoolValue("app::controller", "steam_input", false);
+    settings_client->controller_settings.enabled = enabled;
+    if (enabled) PRINT_DEBUG("Enable SteamInput");
+    else PRINT_DEBUG("Disable SteamInput");   
 }
 
 // steam_appid.txt

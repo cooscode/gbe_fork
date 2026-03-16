@@ -221,7 +221,7 @@ Steam_Controller::Steam_Controller(class Settings *settings, class SteamCallResu
     this->run_every_runcb = run_every_runcb;
 
     set_handles(settings->controller_settings.action_sets);
-    disabled = action_handles.empty();
+    disabled = !settings->controller_settings.enabled;
     initialized = false;
     
     this->run_every_runcb->add(&Steam_Controller::steam_run_every_runcb, this);
