@@ -109,6 +109,7 @@ struct Controller_Settings {
     std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> action_sets{};
     std::map<std::string, std::string> action_set_layer_parents{};
     std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> action_set_layers{};
+    std::string controller_type_override;
 };
 
 struct Group_Clans {
@@ -322,7 +323,6 @@ public:
     //controller
     struct Controller_Settings controller_settings{};
     std::string glyphs_directory{};
-    std::string controller_type_override;
 
     // allow Steam_User_Stats::FindLeaderboard() to always succeed and create the given unknown leaderboard
     bool disable_leaderboards_create_unknown = false;

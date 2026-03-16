@@ -1088,14 +1088,14 @@ ESteamInputType Steam_Controller::GetInputTypeForHandle( ControllerHandle_t cont
     if (controller == controllers.end()) return k_ESteamInputType_Unknown;
     
     // Playstation
-    if (settings->controller_type_override == "PS3") return k_ESteamInputType_PS3Controller;
-    if (settings->controller_type_override == "PS4") return k_ESteamInputType_PS4Controller;
-    if (settings->controller_type_override == "PS5") return k_ESteamInputType_PS5Controller;
+    if (settings->controller_settings.controller_type_override == "PS3") return k_ESteamInputType_PS3Controller;
+    if (settings->controller_settings.controller_type_override == "PS4") return k_ESteamInputType_PS4Controller;
+    if (settings->controller_settings.controller_type_override == "PS5") return k_ESteamInputType_PS5Controller;
     // Xbox
-    if (settings->controller_type_override == "XBOX360") return k_ESteamInputType_XBox360Controller;
-    if (settings->controller_type_override == "XBOXONE") return k_ESteamInputType_XBoxOneController;
+    if (settings->controller_settings.controller_type_override == "XBOX360") return k_ESteamInputType_XBox360Controller;
+    if (settings->controller_settings.controller_type_override == "XBOXONE") return k_ESteamInputType_XBoxOneController;
     // Nintendo
-    if (settings->controller_type_override == "SWITCHPRO") return k_ESteamInputType_SwitchProController;
+    if (settings->controller_settings.controller_type_override == "SWITCHPRO") return k_ESteamInputType_SwitchProController;
 
     return k_ESteamInputType_XBox360Controller;
 }
