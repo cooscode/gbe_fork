@@ -109,8 +109,8 @@ struct Controller_Settings {
     std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> action_sets{};
     std::map<std::string, std::string> action_set_layer_parents{};
     std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> action_set_layers{};
-    std::string controller_type_override;
-    bool enabled;
+    std::string controller_type_override{};
+    bool enabled{};
 };
 
 struct Group_Clans {
