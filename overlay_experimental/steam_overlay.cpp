@@ -12,6 +12,7 @@
 #include <sstream>
 #include <cctype>
 #include <utility>
+#include <unordered_set>
 
 #include "InGameOverlay/RendererDetector.h"
 
@@ -31,11 +32,6 @@ static constexpr int max_window_id = 10000;
 static constexpr int base_notif_window_id  = 0 * max_window_id;
 static constexpr int base_friend_window_id = 1 * max_window_id;
 static constexpr int base_friend_item_id   = 2 * max_window_id;
-
-static InGameOverlay::ToggleKey overlay_toggle_keys[] = {
-    InGameOverlay::ToggleKey::SHIFT, InGameOverlay::ToggleKey::TAB
-};
-static const int toggle_keys_count = 2;
 
 // look for the column 'API language code' here: https://partner.steamgames.com/doc/store/localization/languages
 static constexpr const char* valid_languages[] = {
@@ -95,6 +91,63 @@ void Steam_Overlay::overlay_networking_callback(void* object, Common_Message* ms
     _this->networking_msg_received(msg);
 }
 
+void Steam_Overlay::parse_key_combo()
+{
+    std::unordered_set<InGameOverlay::ToggleKey> keys_combo{};
+    bool use_default = false;
+    if (settings->overlay_toggle_keys.empty()) {
+        use_default = true;
+    } else {
+        for (const auto &key_name : settings->overlay_toggle_keys) {
+            if (common_helpers::str_cmp_insensitive("shift", key_name)) {
+                keys_combo.insert(InGameOverlay::ToggleKey::SHIFT);
+            } else if (common_helpers::str_cmp_insensitive("ctrl", key_name)) {
+                keys_combo.insert(InGameOverlay::ToggleKey::CTRL);
+            } else if (common_helpers::str_cmp_insensitive("alt", key_name)) {
+                keys_combo.insert(InGameOverlay::ToggleKey::ALT);
+            } else if (common_helpers::str_cmp_insensitive("tab", key_name)) {
+                keys_combo.insert(InGameOverlay::ToggleKey::TAB);
+            } else if (common_helpers::str_cmp_insensitive("fn1", key_name)) {
+                keys_combo.insert(InGameOverlay::ToggleKey::F1);
+            } else if (common_helpers::str_cmp_insensitive("fn2", key_name)) {
+                keys_combo.insert(InGameOverlay::ToggleKey::F2);
+            } else if (common_helpers::str_cmp_insensitive("fn3", key_name)) {
+                keys_combo.insert(InGameOverlay::ToggleKey::F3);
+            } else if (common_helpers::str_cmp_insensitive("fn4", key_name)) {
+                keys_combo.insert(InGameOverlay::ToggleKey::F4);
+            } else if (common_helpers::str_cmp_insensitive("fn5", key_name)) {
+                keys_combo.insert(InGameOverlay::ToggleKey::F5);
+            } else if (common_helpers::str_cmp_insensitive("fn6", key_name)) {
+                keys_combo.insert(InGameOverlay::ToggleKey::F6);
+            } else if (common_helpers::str_cmp_insensitive("fn7", key_name)) {
+                keys_combo.insert(InGameOverlay::ToggleKey::F7);
+            } else if (common_helpers::str_cmp_insensitive("fn8", key_name)) {
+                keys_combo.insert(InGameOverlay::ToggleKey::F8);
+            } else if (common_helpers::str_cmp_insensitive("fn9", key_name)) {
+                keys_combo.insert(InGameOverlay::ToggleKey::F9);
+            } else if (common_helpers::str_cmp_insensitive("fn10", key_name)) {
+                keys_combo.insert(InGameOverlay::ToggleKey::F10);
+            } else if (common_helpers::str_cmp_insensitive("fn11", key_name)) {
+                keys_combo.insert(InGameOverlay::ToggleKey::F11);
+            } else if (common_helpers::str_cmp_insensitive("fn12", key_name)) {
+                keys_combo.insert(InGameOverlay::ToggleKey::F12);
+            } else {
+                use_default = true;
+                PRINT_DEBUG("[X] Unknown key '%s', using default key combo Shift + Tab", key_name.c_str());
+                break;
+            }
+        }
+    }
+
+    if (use_default) {
+        toggle_keys = {
+            InGameOverlay::ToggleKey::SHIFT, InGameOverlay::ToggleKey::TAB
+        };
+    } else {
+        toggle_keys = std::vector<InGameOverlay::ToggleKey>(keys_combo.begin(), keys_combo.end());
+    }
+}
+
 Steam_Overlay::Steam_Overlay(Settings* settings, Local_Storage *local_storage, SteamCallResults* callback_results, SteamCallBacks* callbacks, RunEveryRunCB* run_every_runcb, Networking* network) :
     settings(settings),
     local_storage(local_storage),
@@ -125,7 +178,8 @@ Steam_Overlay::Steam_Overlay(Settings* settings, Local_Storage *local_storage, S
         std::chrono::milliseconds(0),
         [this] { return !setup_overlay_called; }
     );
-    
+
+    parse_key_combo();
     strncpy(username_text, settings->get_local_name(), sizeof(username_text));
 
     // we need these copies to show the warning only once, then disable the flag
@@ -222,7 +276,7 @@ bool Steam_Overlay::renderer_hook_proc()
         overlay_state_hook(state == InGameOverlay::OverlayHookState::Ready || state == InGameOverlay::OverlayHookState::Reset);
     };
 
-    bool started = _renderer->StartHook(overlay_toggle_callback, overlay_toggle_keys, toggle_keys_count, &fonts_atlas);
+    bool started = _renderer->StartHook(overlay_toggle_callback, toggle_keys.data(), (int)toggle_keys.size(), &fonts_atlas);
     PRINT_DEBUG("started renderer hook (result=%i)", (int)started);
     
     return true;

@@ -370,6 +370,8 @@ public:
     bool overlay_always_show_fps = false;
     bool overlay_always_show_frametime = false;
     bool overlay_always_show_playtime = false;
+    // keys used to toggle the overlay, default = Shift + Tab
+    std::vector<std::string> overlay_toggle_keys{};
 
     // free weekend
     bool free_weekend = false;

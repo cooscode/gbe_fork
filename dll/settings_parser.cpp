@@ -198,6 +198,20 @@ static void load_subscribed_groups_clans(const std::string &base_path, Settings 
     }
 }
 
+// overlay::hotkeys
+static void parse_overlay_hotkeys(class Settings *settings_client, class Settings *settings_server)
+{
+    // avoid including overlay header here, just save the strings and let the overlay class translate them
+    auto combo_str = ini.GetValue("overlay::hotkeys", "key_combo");
+    if (combo_str && combo_str[0]) {
+        auto combo = common_helpers::str_split(combo_str, "+");
+        std::for_each(combo.begin(), combo.end(), [](std::string &item){ item = common_helpers::str_strip(item); });
+        std::erase_if(combo, [](const std::string& item) { return item.empty(); });
+        settings_client->overlay_toggle_keys = combo;
+        settings_server->overlay_toggle_keys = combo;
+    }
+}
+
 // overlay::appearance
 static void load_overlay_appearance(class Settings *settings_client, class Settings *settings_server, class Local_Storage *local_storage)
 {
@@ -1957,6 +1971,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     }
 
     parse_overlay_general_config(settings_client, settings_server);
+    parse_overlay_hotkeys(settings_client, settings_server);
     load_overlay_appearance(settings_client, settings_server, local_storage);
     parse_steam_game_stats_reports_dir(settings_client, settings_server);
     parse_cloud_save(&ini, settings_client, settings_server, local_storage);
