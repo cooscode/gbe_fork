@@ -205,8 +205,16 @@ static void parse_overlay_hotkeys(class Settings *settings_client, class Setting
     auto combo_str = ini.GetValue("overlay::hotkeys", "key_combo");
     if (combo_str && combo_str[0]) {
         auto combo = common_helpers::str_split(combo_str, "+");
-        std::for_each(combo.begin(), combo.end(), [](std::string &item){ item = common_helpers::str_strip(item); });
-        std::erase_if(combo, [](const std::string& item) { return item.empty(); });
+        std::for_each(combo.begin(), combo.end(),
+            [](std::string &item){ item = common_helpers::str_strip(item); }
+        );
+        combo.erase(
+            std::remove_if(
+                combo.begin(), combo.end(),
+                [](const std::string& item) { return item.empty(); }
+            ),
+            combo.end()
+        );
         settings_client->overlay_toggle_keys = combo;
         settings_server->overlay_toggle_keys = combo;
     }
