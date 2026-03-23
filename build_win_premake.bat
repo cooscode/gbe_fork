@@ -2,17 +2,9 @@
 setlocal EnableDelayedExpansion
 cd /d "%~dp0"
 
-set /a "MAX_THREADS=2"
-if defined NUMBER_OF_PROCESSORS (
-  :: use 70%
-  set /a "MAX_THREADS=%NUMBER_OF_PROCESSORS% * 70 / 100"
-  if %MAX_THREADS% lss 1 (
-    set /a "MAX_THREADS=1"
-  )
-)
-
 set /a "BUILD_DEPS=0"
 set /a "GEN_PROJECT=1"
+set /a "BUILD_JOBS=-1"
 
 :args_loop
   if "%~1" equ "" (
@@ -21,6 +13,9 @@ set /a "GEN_PROJECT=1"
     set /a "BUILD_DEPS=1"
   ) else if "%~1" equ "--nogen" (
     set /a "GEN_PROJECT=0"
+  ) else if "%~1" equ "--j" (
+    set /a "BUILD_JOBS=%~2"
+    shift /1
   ) else if "%~1" equ "--help" (
     goto :help_page
   ) else (
@@ -32,6 +27,18 @@ set /a "GEN_PROJECT=1"
   goto :args_loop
 
 :args_loop_end
+  set /a "MAX_THREADS=2"
+  if defined NUMBER_OF_PROCESSORS (
+    :: use 70%
+    set /a "MAX_THREADS=%NUMBER_OF_PROCESSORS% * 70 / 100"
+    if %MAX_THREADS% lss 1 (
+      set /a "MAX_THREADS=1"
+    )
+  )
+  if %BUILD_JOBS% geq 1 (
+    set /a MAX_THREADS=BUILD_JOBS
+  )
+
   :: check premake
   set "PREMAKE_EXE=third-party\common\win\premake\premake5.exe"
   if not exist "%PREMAKE_EXE%" (
@@ -116,5 +123,6 @@ set /a "GEN_PROJECT=1"
   echo:switches:
   echo:  --deps: rebuild third-party dependencies
   echo:  --nogen: don't regenerate build files
+  echo   --j: parallel build jobs
   echo:  --help: show this page
   goto :end_script
