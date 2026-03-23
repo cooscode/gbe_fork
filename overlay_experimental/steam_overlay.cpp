@@ -13,6 +13,7 @@
 #include <cctype>
 #include <utility>
 #include <unordered_set>
+#include <unordered_map>
 
 #include "InGameOverlay/RendererDetector.h"
 
@@ -93,44 +94,36 @@ void Steam_Overlay::overlay_networking_callback(void* object, Common_Message* ms
 
 void Steam_Overlay::parse_key_combo()
 {
+    static const std::unordered_map<InGameOverlay::ToggleKey, std::string_view> KEYS_MAP {
+        { InGameOverlay::ToggleKey::SHIFT, "shift" },
+        { InGameOverlay::ToggleKey::CTRL,  "ctrl"  },
+        { InGameOverlay::ToggleKey::ALT,   "alt"   },
+        { InGameOverlay::ToggleKey::TAB,   "tab"   },
+        { InGameOverlay::ToggleKey::F1,    "fn1"   },
+        { InGameOverlay::ToggleKey::F2,    "fn2"   },
+        { InGameOverlay::ToggleKey::F3,    "fn3"   },
+        { InGameOverlay::ToggleKey::F4,    "fn4"   },
+        { InGameOverlay::ToggleKey::F5,    "fn5"   },
+        { InGameOverlay::ToggleKey::F6,    "fn6"   },
+        { InGameOverlay::ToggleKey::F7,    "fn7"   },
+        { InGameOverlay::ToggleKey::F8,    "fn8"   },
+        { InGameOverlay::ToggleKey::F9,    "fn9"   },
+        { InGameOverlay::ToggleKey::F10,   "fn10"  },
+        { InGameOverlay::ToggleKey::F11,   "fn11"  },
+        { InGameOverlay::ToggleKey::F12,   "fn12"  },
+    };
+
     std::unordered_set<InGameOverlay::ToggleKey> keys_combo{};
     bool use_default = false;
     if (settings->overlay_toggle_keys.empty()) {
         use_default = true;
     } else {
         for (const auto &key_name : settings->overlay_toggle_keys) {
-            if (common_helpers::str_cmp_insensitive("shift", key_name)) {
-                keys_combo.insert(InGameOverlay::ToggleKey::SHIFT);
-            } else if (common_helpers::str_cmp_insensitive("ctrl", key_name)) {
-                keys_combo.insert(InGameOverlay::ToggleKey::CTRL);
-            } else if (common_helpers::str_cmp_insensitive("alt", key_name)) {
-                keys_combo.insert(InGameOverlay::ToggleKey::ALT);
-            } else if (common_helpers::str_cmp_insensitive("tab", key_name)) {
-                keys_combo.insert(InGameOverlay::ToggleKey::TAB);
-            } else if (common_helpers::str_cmp_insensitive("fn1", key_name)) {
-                keys_combo.insert(InGameOverlay::ToggleKey::F1);
-            } else if (common_helpers::str_cmp_insensitive("fn2", key_name)) {
-                keys_combo.insert(InGameOverlay::ToggleKey::F2);
-            } else if (common_helpers::str_cmp_insensitive("fn3", key_name)) {
-                keys_combo.insert(InGameOverlay::ToggleKey::F3);
-            } else if (common_helpers::str_cmp_insensitive("fn4", key_name)) {
-                keys_combo.insert(InGameOverlay::ToggleKey::F4);
-            } else if (common_helpers::str_cmp_insensitive("fn5", key_name)) {
-                keys_combo.insert(InGameOverlay::ToggleKey::F5);
-            } else if (common_helpers::str_cmp_insensitive("fn6", key_name)) {
-                keys_combo.insert(InGameOverlay::ToggleKey::F6);
-            } else if (common_helpers::str_cmp_insensitive("fn7", key_name)) {
-                keys_combo.insert(InGameOverlay::ToggleKey::F7);
-            } else if (common_helpers::str_cmp_insensitive("fn8", key_name)) {
-                keys_combo.insert(InGameOverlay::ToggleKey::F8);
-            } else if (common_helpers::str_cmp_insensitive("fn9", key_name)) {
-                keys_combo.insert(InGameOverlay::ToggleKey::F9);
-            } else if (common_helpers::str_cmp_insensitive("fn10", key_name)) {
-                keys_combo.insert(InGameOverlay::ToggleKey::F10);
-            } else if (common_helpers::str_cmp_insensitive("fn11", key_name)) {
-                keys_combo.insert(InGameOverlay::ToggleKey::F11);
-            } else if (common_helpers::str_cmp_insensitive("fn12", key_name)) {
-                keys_combo.insert(InGameOverlay::ToggleKey::F12);
+            auto key_it = std::find_if(KEYS_MAP.cbegin(), KEYS_MAP.cend(), [&key_name](decltype(*KEYS_MAP.cbegin()) const &item) {
+                return common_helpers::str_cmp_insensitive(item.second, key_name);
+            });
+            if (KEYS_MAP.cend() != key_it) {
+                keys_combo.insert(key_it->first);
             } else {
                 use_default = true;
                 PRINT_DEBUG("[X] Unknown key '%s', using default key combo Shift + Tab", key_name.c_str());
