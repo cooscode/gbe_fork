@@ -1854,17 +1854,9 @@ uint32 Steam_UGC::GetDownloadedItems(PublishedFileId_t* pvecPublishedFileIDs, ui
     }
 
     const auto all_mods = settings->modSet(); // not sure if using all mods is correct
-    uint32 copied = 0;
-    for (auto mod_it = all_mods.cbegin(); mod_it != all_mods.cend(); ++mod_it) {
-        if (cMaxEntries == 0) {
-            break;
-        }
-        *pvecPublishedFileIDs = *mod_it;
-        ++copied;
-        --cMaxEntries;
-        ++pvecPublishedFileIDs;
-    }
+    uint32 count = std::min<uint32>((uint32)all_mods.size(), cMaxEntries);
+    std::copy_n(all_mods.cbegin(), count, pvecPublishedFileIDs);
 
-    PRINT_DEBUG("  copied count = %u", copied);
-    return copied;
+    PRINT_DEBUG("  copied count = %u", count);
+    return count;
 }
