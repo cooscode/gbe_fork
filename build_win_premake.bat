@@ -67,6 +67,14 @@ set /a "BUILD_JOBS=-1"
   for /f "tokens=* delims=" %%A in ('"%VSWHERE_EXE%" -prerelease -latest -nocolor -nologo -property installationPath 2^>nul') do (
     set "MSBUILD_EXE=%%~A\MSBuild\Current\Bin\MSBuild.exe"
   )
+  :: in case we are running inside a vcvars cmd from a portable buildtools installation without Visual Studio
+  if not exist "%MSBUILD_EXE%" (
+    for /f "tokens=* delims=" %%A in ('where MSBuild 2^>nul') do (
+      set "MSBUILD_EXE=%%~A"
+      goto :end_find_custom_msbuild
+    )
+  )
+:end_find_custom_msbuild
   if not exist "%MSBUILD_EXE%" (
     1>&2 echo:MSBuild wasn't found
     goto :end_script_with_err
