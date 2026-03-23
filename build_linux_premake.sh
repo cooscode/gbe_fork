@@ -33,7 +33,7 @@ done
 # use 70%
 build_threads="$(( $(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0) * 70 / 100 ))"
 [[ $build_threads -lt 2 ]] && build_threads=2
-[[ "$BUILD_JOBS" -ge "1" ]] && build_threads="$BUILD_JOBS"
+[[ "$BUILD_JOBS" -ge 1 ]] && build_threads="$BUILD_JOBS"
 
 premake_exe=./"third-party/common/linux/premake/premake5"
 if [[ ! -f "$premake_exe" ]]; then

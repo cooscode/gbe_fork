@@ -131,6 +131,6 @@ set /a "BUILD_JOBS=-1"
   echo:switches:
   echo:  --deps: rebuild third-party dependencies
   echo:  --nogen: don't regenerate build files
-  echo   --j: parallel build jobs
+  echo:  --j: parallel build jobs
   echo:  --help: show this page
   goto :end_script
