@@ -100,7 +100,7 @@ set /a "BUILD_JOBS=-1"
       for %%C in (%BUILD_TARGETS%) do (
         set "BUILD_TARGET=%%C"
         echo. & echo:building !BUILD_TARGET! !BUILD_TYPE! !BUILD_PLATFORM!
-        call "%MSBUILD_EXE%" /nologo -m:%MAX_THREADS% -v:n /p:Configuration=!BUILD_TYPE!,Platform=!BUILD_PLATFORM! /target:!BUILD_TARGET! "%SLN_FILE%" || (
+        call "%MSBUILD_EXE%" /nologo -m:1 -p:CL_MPCount=%MAX_THREADS% -v:n /p:Configuration=!BUILD_TYPE!,Platform=!BUILD_PLATFORM! /target:!BUILD_TARGET! "%SLN_FILE%" || (
           goto :end_script_with_err
         )
       )
