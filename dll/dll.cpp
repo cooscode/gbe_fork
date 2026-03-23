@@ -1168,7 +1168,7 @@ STEAMAPI_API void SteamGameServer_Shutdown()
         return;
     }
 
-    get_steam_client()->serverShutdown();
+    get_steam_client()->ReleaseUser(server_steam_pipe, SERVER_HSTEAMUSER);
     get_steam_client()->BReleaseSteamPipe(server_steam_pipe);
     get_steam_client()->BShutdownIfAllPipesClosed();
 
