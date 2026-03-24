@@ -180,7 +180,6 @@ bool Steam_GameServer::InitGameServer( uint32 unIP, uint16 usGamePort, uint16 us
     if (!settings->disable_source_query)
         network->startQuery({ unIP, usQueryPort });
 
-    policy_response_called = false;
     call_servers_connected = false;
     call_servers_disconnected = false;
 
@@ -248,8 +247,7 @@ void Steam_GameServer::LogOn( const char *pszToken )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     call_servers_connected = true;
     call_servers_disconnected = false;
-    logged_in = true;
-    settings->set_offline(false);
+    logon_time = std::chrono::high_resolution_clock::now();
 }
 
 void Steam_GameServer::LogOn(
@@ -271,8 +269,7 @@ void Steam_GameServer::LogOnAnonymous()
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     call_servers_connected = true;
     call_servers_disconnected = false;
-    logged_in = true;
-    settings->set_offline(false);
+    logon_time = std::chrono::high_resolution_clock::now();
 }
 
 void Steam_GameServer::LogOn()
@@ -289,11 +286,16 @@ void Steam_GameServer::LogOff()
     if (logged_in) {
         call_servers_connected = false;
         call_servers_disconnected = true;
-    }
+        logoff_time = std::chrono::high_resolution_clock::now();
 
-    policy_response_called = false;
-    logged_in = false;
-    settings->set_offline(true);
+        logged_in = false;
+        settings->set_offline(true);
+
+        // Shutdown Source Query
+        network->shutDownQuery();
+        // And empty the queue if needed
+        outgoing_packets.clear();
+    }
 }
 
 
@@ -309,7 +311,7 @@ bool Steam_GameServer::BSecure()
 {
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (!policy_response_called) {
+    if (!logged_in) {
       server_data.set_secure(0);
       return false;
     }
@@ -322,7 +324,7 @@ CSteamID Steam_GameServer::GetSteamID()
 {
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    if (!logged_in) return k_steamIDNil;
+    if (!logged_in) return CSteamID(0, 0, k_EUniversePublic, k_EAccountTypeAnonGameServer); // blank anon server id
     return settings->get_local_steam_id();
 }
 
@@ -597,7 +599,6 @@ bool Steam_GameServer::BSetServerType( uint32 unServerFlags, uint32 unGameIP, ui
     if (!settings->disable_source_query && !network->isQueryAlive())
         network->startQuery({ unGameIP, usQueryPort });
 
-    //TODO?
     return true;
 }
 
@@ -907,22 +908,37 @@ SteamAPICall_t Steam_GameServer::ComputeNewPlayerCompatibility( CSteamID steamID
 
 void Steam_GameServer::RunCallbacks()
 {
-    bool temp_call_servers_connected = call_servers_connected;
-    bool temp_call_servers_disconnected = call_servers_disconnected;
-    call_servers_disconnected = call_servers_connected = false;
-
-    if (temp_call_servers_connected) {
+    if (call_servers_connected && check_timedout(logon_time, 0.1)) {
         PRINT_DEBUG("SteamServersConnected_t");
+
+        call_servers_connected = false;
+        logged_in = true;
+        settings->set_offline(false);
+
         SteamServersConnected_t data{};
-        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.0);
+
+        PRINT_DEBUG("GSPolicyResponse_t");
+        GSPolicyResponse_t data2{};
+        data2.m_bSecure = !!(flags & k_unServerFlagSecure);
+        callbacks->addCBResult(data2.k_iCallback, &data2, sizeof(data2), 0.1);
     }
 
-    if (logged_in && !policy_response_called) {
-        PRINT_DEBUG("GSPolicyResponse_t");
-        GSPolicyResponse_t data{};
-        data.m_bSecure = !!(flags & k_unServerFlagSecure);
-        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.11);
-        policy_response_called = true;
+    if (call_servers_disconnected && check_timedout(logoff_time, 0.1)) {
+        PRINT_DEBUG("Gameserver is disconnected");
+
+        call_servers_disconnected = false;
+
+        SteamServersDisconnected_t data{};
+        data.m_eResult = k_EResultOK;
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.0);
+
+        PRINT_DEBUG("notifying all that Gameserver is not logged in");
+        Common_Message msg{};
+        msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
+        msg.set_allocated_gameserver(new Gameserver(server_data));
+        msg.mutable_gameserver()->set_offline(true);
+        network->sendToAllIndividuals(&msg, true);
     }
 
     if (logged_in &&
@@ -932,29 +948,19 @@ void Steam_GameServer::RunCallbacks()
         Common_Message msg{};
         msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
         msg.set_allocated_gameserver(new Gameserver(server_data));
-        //msg.mutable_gameserver()->set_num_players(auth_manager->countInboundAuth());
+
+        // Fill player list and calculate their playtime.
+        auto cur_time = std::chrono::steady_clock::now();
+
+        for (const auto &[steam_id, info] : players) {
+            auto new_player = msg.mutable_gameserver()->add_players();
+            new_player->set_name(info.name);
+            new_player->set_score(info.score);
+            new_player->set_playtime(std::chrono::duration<float>(cur_time - info.join_time).count());
+        }
+
         network->sendToAllIndividuals(&msg, true);
         last_sent_server_info = std::chrono::high_resolution_clock::now();
-    }
-
-    if (temp_call_servers_disconnected) {
-        PRINT_DEBUG("Gameserver is disconnected");
-        SteamServersDisconnected_t data{};
-        data.m_eResult = k_EResultOK;
-        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
-
-        if (!logged_in) {
-            PRINT_DEBUG("notifying all that Gameserver is not logged in");
-            Common_Message msg{};
-            msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
-            msg.set_allocated_gameserver(new Gameserver(server_data));
-            msg.mutable_gameserver()->set_offline(true);
-            network->sendToAllIndividuals(&msg, true);
-            // Shutdown Source Query
-            network->shutDownQuery();
-            // And empty the queue if needed
-            outgoing_packets.clear();
-        }
     }
 }
 

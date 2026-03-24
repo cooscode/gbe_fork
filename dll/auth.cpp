@@ -17,7 +17,8 @@
 
 #include "dll/auth.h"
 
-#define STEAM_TICKET_PROCESS_TIME 0.03
+// this should be at least as long as SteamGameServer logon time
+#define STEAM_TICKET_PROCESS_TIME 0.15
 
 static inline int generate_random_int()
 {

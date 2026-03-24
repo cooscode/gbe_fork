@@ -50,10 +50,9 @@ HSteamUser Steam_User::GetHSteamUser()
 void Steam_User::LogOn( CSteamID steamID )
 {
     PRINT_DEBUG_ENTRY();
-    settings->set_offline(false);
-    logon_time = std::chrono::high_resolution_clock::now();
     call_logged_on = true;
     call_logged_off = false;
+    logon_time = std::chrono::high_resolution_clock::now();
 
     if (settings == get_steam_client()->settings_server) {
         get_steam_client()->steam_gameserver->LogOnAnonymous();
@@ -63,10 +62,11 @@ void Steam_User::LogOn( CSteamID steamID )
 void Steam_User::LogOff()
 {
     PRINT_DEBUG_ENTRY();
-    settings->set_offline(true);
-    logoff_time = std::chrono::high_resolution_clock::now();
     call_logged_on = false;
     call_logged_off = true;
+    logoff_time = std::chrono::high_resolution_clock::now();
+
+    settings->set_offline(true);
     player_auths.clear();
 
     if (settings == get_steam_client()->settings_server) {
@@ -1107,6 +1107,7 @@ void Steam_User::RunCallbacks()
     if (callbacks_old1) {
         if (call_logged_on && check_timedout(logon_time, 0.1)) {
             PRINT_DEBUG("ICMCallback -> OnLogonSuccess");
+            settings->set_offline(false);
             callbacks_old1->OnLogonSuccess();
             call_logged_on = false;
         }
@@ -1129,6 +1130,7 @@ void Steam_User::RunCallbacks()
     } else if (callbacks_old2) {
         if (call_logged_on && check_timedout(logon_time, 0.1)) {
             PRINT_DEBUG("ICMCallback -> OnLogonSuccess");
+            settings->set_offline(false);
             callbacks_old2->OnLogonSuccess();
             call_logged_on = false;
         }

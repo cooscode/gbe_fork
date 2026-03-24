@@ -143,6 +143,12 @@ message Networking_Messages {
 }
 
 message Gameserver {
+    message PlayerInfo {
+        string name = 1;
+        uint32 score = 2;
+        float playtime = 3;
+    }
+
     uint64 id = 1;
     bytes game_description = 2;
     bytes mod_dir = 3;
@@ -171,6 +177,8 @@ message Gameserver {
 
     bool offline = 48;
     uint32 type = 49;
+
+    repeated PlayerInfo players = 50;
 }
 
 message Friend {

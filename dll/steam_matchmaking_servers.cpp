@@ -15,7 +15,7 @@
    License along with the Goldberg Emulator; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "dll/dll.h"
+#include "dll/steam_matchmaking_servers.h"
 
 #define SERVER_TIMEOUT 10.0
 #define DIRECT_IP_DELAY 0.05
@@ -755,13 +755,12 @@ void Steam_Matchmaking_Servers::server_details_players(Gameserver *g, Steam_Matc
     } else if (!settings->matchmaking_server_details_via_source_query) { // original behavior
         uint32_t number_players = g->num_players();
         PRINT_DEBUG("  players: %u", number_players);
-        const auto &players = get_steam_client()->steam_gameserver->get_players();
-        auto player = players->cbegin();
-        for (uint32_t i = 0; i < number_players && player != players->end(); ++i, ++player) {
-            auto duration = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - player->second.join_time);
-            float playtime = static_cast<float>(duration.count());
-            PRINT_DEBUG("  PLAYER [%u] '%s' %u %f", i, player->second.name.c_str(), player->second.score, playtime);
-            r->players_response->AddPlayerToList(player->second.name.c_str(), player->second.score, playtime);
+
+        int player_num = 1;
+
+        for (const auto &player : g->players()) {
+            PRINT_DEBUG("  PLAYER [%u] '%s' %u %.2f", player_num++, player.name().c_str(), player.score(), player.playtime());
+            r->players_response->AddPlayerToList(player.name().c_str(), player.score(), player.playtime());
         }
     }
 
