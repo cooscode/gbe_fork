@@ -31,7 +31,6 @@ constexpr const static char config_ini_overlay[] = "configs.overlay.ini";
 constexpr const static char config_ini_user[]    = "configs.user.ini";
 
 static CSimpleIniA ini{};
-
 typedef struct IniValue {
     enum class Type {
         STR,
@@ -516,6 +515,23 @@ static void load_gamecontroller_settings(Settings *settings)
     }
 
     settings->glyphs_directory = path + (PATH_SEPARATOR "glyphs" PATH_SEPARATOR);
+}
+
+// controller
+static void parse_controller_config(class Settings *settings_client)
+{
+    std::string type(common_helpers::to_upper(common_helpers::string_strip(ini.GetValue("app::controller", "type", ""))));
+    settings_client->controller_settings.controller_type_override = type;
+    PRINT_DEBUG("Setting Controller type override to: '%s'", type.c_str());
+    
+    bool enabled = ini.GetBoolValue("app::controller", "steam_input", false);
+    settings_client->controller_settings.enabled = enabled;
+    if (enabled) {
+        PRINT_DEBUG("Enable SteamInput");
+    }
+    else {
+        PRINT_DEBUG("Disable SteamInput");
+    }
 }
 
 // steam_appid.txt
@@ -1945,6 +1961,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
 
     parse_mods_folder(settings_client, settings_server, local_storage);
     load_gamecontroller_settings(settings_client);
+    parse_controller_config(settings_client);
     parse_auto_accept_invite(settings_client, settings_server);
     parse_auto_send_invite(settings_client, settings_server);
     parse_ip_country(local_storage, settings_client, settings_server);
