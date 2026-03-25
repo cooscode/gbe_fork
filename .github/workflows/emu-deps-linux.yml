@@ -17,6 +17,9 @@ env:
   PACKAGE_BASE_DIR: "build/package/linux"
   THIRD_PARTY_BASE_DIR: "third-party"
 
+  # https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories
+  MAX_PARALLEL_JOBS: 4
+
 jobs:
   deps-build:
     runs-on: "ubuntu-22.04"
@@ -87,4 +90,4 @@ jobs:
         run: |
           export CMAKE_GENERATOR="Unix Makefiles"
           sudo chmod 777 ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5
-          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5-deps.lua --64-build --32-build --all-ext --all-build --j=2 --verbose --clean --os=linux gmake2
+          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5-deps.lua --64-build --32-build --all-ext --all-build --j=${{ env.MAX_PARALLEL_JOBS }} --verbose --clean --os=linux gmake2

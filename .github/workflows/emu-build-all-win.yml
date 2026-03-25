@@ -16,6 +16,9 @@ env:
 
   THIRD_PARTY_BASE_DIR: "third-party"
 
+  # https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories
+  MAX_PARALLEL_JOBS: 4
+
 jobs:
   deps:
     name: "Restore or build deps"
@@ -107,7 +110,7 @@ jobs:
         shell: "cmd"
         working-directory: "${{ github.workspace }}/build/project/vs2022/win"
         run: |
-          msbuild /nologo /target:${{ matrix.prj }} /m:2 /v:n /p:Configuration=${{ matrix.cfg }},Platform=${{ matrix.arch }} gbe.sln
+          msbuild /nologo /target:${{ matrix.prj }} /m:1 -p:CL_MPCount=${{ env.MAX_PARALLEL_JOBS }} /v:n /p:Configuration=${{ matrix.cfg }},Platform=${{ matrix.arch }} gbe.sln
 
       # upload artifact/package to github Actions
       - name: "Upload target package"
