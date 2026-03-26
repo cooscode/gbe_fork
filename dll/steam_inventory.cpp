@@ -165,7 +165,7 @@ bool Steam_Inventory::GetResultItems( SteamInventoryResult_t resultHandle,
                     pOutItemsArray->m_iDefinition = i->value("definition", static_cast<int32>(pOutItemsArray->m_itemId));
                     pOutItemsArray->m_unQuantity = i->value("quantity", static_cast<uint16>(1));
                 } catch (...) {
-                    pOutItemsArray->m_iDefinition = pOutItemsArray->m_itemId;
+                    pOutItemsArray->m_iDefinition = static_cast<int32>(pOutItemsArray->m_itemId);
                     pOutItemsArray->m_unQuantity = 1;
                 }
                 pOutItemsArray->m_unFlags = k_ESteamItemNoTrade;
@@ -181,7 +181,7 @@ bool Steam_Inventory::GetResultItems( SteamInventoryResult_t resultHandle,
                         pOutItemsArray->m_iDefinition = it->value("definition", static_cast<int32>(pOutItemsArray->m_itemId));
                         pOutItemsArray->m_unQuantity = it->value("quantity", static_cast<uint16>(1));
                     } catch (...) {
-                        pOutItemsArray->m_iDefinition = pOutItemsArray->m_itemId;
+                        pOutItemsArray->m_iDefinition = static_cast<int32>(pOutItemsArray->m_itemId);
                         pOutItemsArray->m_unQuantity = 1;
                     }
                     pOutItemsArray->m_unFlags = k_ESteamItemNoTrade;
