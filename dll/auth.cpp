@@ -881,7 +881,7 @@ HAuthTicket Auth_Manager::getWebApiTicket( const char* pchIdentity )
 CSteamID Auth_Manager::fakeUser()
 {
     Auth_Data data = {};
-    data.id = generate_steam_anon_user();
+    data.id = generate_steam_id_anonserver(); // not k_EAccountTypeAnonUser
     inbound.push_back(data);
     return data.id;
 }

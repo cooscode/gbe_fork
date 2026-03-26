@@ -399,6 +399,10 @@ void Steam_Client::ReleaseUser( HSteamPipe hSteamPipe, HSteamUser hUser )
 {
     PRINT_DEBUG_ENTRY();
     if (hUser == SERVER_HSTEAMUSER && steam_pipes.count(hSteamPipe)) {
+        if (steam_gameserver->BLoggedOn()) {
+            steam_gameserver->LogOff();
+        }
+
         steamclient_server_inited = false;
     }
 }
