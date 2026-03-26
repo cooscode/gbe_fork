@@ -70,7 +70,6 @@ bool Steam_GameServer::set_appid(int32 input_appid, const char *game_dir, bool a
     server_data.set_appid(appid);
     settings->set_game_id(CGameID(appid));
     network->setAppID(appid);
-    get_steam_client()->steam_gameserver_game_coordinator->initialize_gc();
 
     PRINT_DEBUG("set server appid to %u", appid);
     return true;
@@ -179,6 +178,8 @@ bool Steam_GameServer::InitGameServer( uint32 unIP, uint16 usGamePort, uint16 us
 
     if (!settings->disable_source_query)
         network->startQuery({ unIP, usQueryPort });
+
+    get_steam_client()->steam_gameserver_game_coordinator->initialize_gc();
 
     call_servers_connected = false;
     call_servers_disconnected = false;
@@ -290,12 +291,14 @@ void Steam_GameServer::LogOff()
 
         logged_in = false;
         settings->set_offline(true);
-
-        // Shutdown Source Query
-        network->shutDownQuery();
-        // And empty the queue if needed
-        outgoing_packets.clear();
     }
+
+    // Shutdown Source Query
+    network->shutDownQuery();
+    // And empty the queue if needed
+    outgoing_packets.clear();
+
+    get_steam_client()->steam_gameserver_game_coordinator->shutdown_gc();
 }
 
 
@@ -598,6 +601,8 @@ bool Steam_GameServer::BSetServerType( uint32 unServerFlags, uint32 unGameIP, ui
 
     if (!settings->disable_source_query && !network->isQueryAlive())
         network->startQuery({ unGameIP, usQueryPort });
+
+    get_steam_client()->steam_gameserver_game_coordinator->initialize_gc();
 
     return true;
 }

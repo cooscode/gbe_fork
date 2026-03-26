@@ -336,6 +336,11 @@ message GameServer_Items_Messages {
     message Attribute {
         uint32 def = 1;
         float value = 2;
+        bytes value_bytes = 3;
+    }
+    message EquipState {
+        uint32 class_id = 1;
+        uint32 slot_id = 2;
     }
     message Item {
         uint64 id = 1;
@@ -350,6 +355,9 @@ message GameServer_Items_Messages {
         string custom_name = 10;
         string custom_desc = 11;
         uint64 original_id = 12;
+        bool in_use = 13;
+        uint32 style = 14;
+        repeated EquipState equip_states = 15;
     }
     message InventoryRequest {
         uint64 steam_api_call = 1;
@@ -358,9 +366,12 @@ message GameServer_Items_Messages {
         uint64 steam_api_call = 1;
         repeated Item items = 2;
     }
-    message InventoryPosUpdate {
-        uint64 item_id = 1;
-        uint32 item_inv_pos = 2;
+    message ItemUpdate {
+        uint64 id = 1;
+        optional uint32 inv_pos = 2;
+        optional uint32 style = 3;
+        optional bool has_equip_states = 4;
+        repeated EquipState equip_states = 5;
     }
     message ItemDeletion {
         uint64 item_id = 1;
@@ -369,7 +380,7 @@ message GameServer_Items_Messages {
     enum Types {
         Request_Inventory = 0;
         Response_Inventory = 1;
-        Request_UpdateInventoryPos = 2;
+        Request_UpdateItem = 2;
         Request_DeleteItem = 3;
         Request_Respawn = 4;
     }
@@ -379,7 +390,7 @@ message GameServer_Items_Messages {
     oneof data_messages {
         InventoryRequest inventory_request = 3;
         InventoryResponse inventory_response = 4;
-        InventoryPosUpdate inventory_pos_update = 5;
+        ItemUpdate item_update = 5;
         ItemDeletion item_deletion = 6;
     }
 }

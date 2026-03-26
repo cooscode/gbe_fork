@@ -51,24 +51,35 @@
 
 struct Econ_Item_Attribute
 {
-    uint32 def;
-    float value;
+    enum Attribute_Type
+    {
+        ATTR_TYPE_DEFAULT = 0,
+        ATTR_TYPE_FLOAT,
+        ATTR_TYPE_INT,
+        ATTR_TYPE_STRING,
+    };
+    uint32 def{};
+    float value{}; // for backwards compatibility
+    std::string value_bytes;
+    Attribute_Type type{}; // this is only used on the client side to know how to save attribute into file
 };
 
 struct Econ_Item
 {
-    uint64 id;
-    uint32 def;
-    uint32 level;
-    EItemQuality quality;
-    uint32 inv_pos;
-    uint32 quantity;
-    uint8 flags;
-    uint8 origin;
+    uint64 id{};
+    uint32 def{};
+    uint32 level{};
+    EItemQuality quality{};
+    uint32 inv_pos{};
+    uint32 quantity{};
+    uint8 flags{};
+    uint8 origin{};
     std::string custom_name;
     std::string custom_desc;
-    bool in_use;
-    uint64 original_id;
+    bool in_use{};
+    uint64 original_id{};
+    uint8 style{};
+    std::map<uint16, uint16> equip_states;
     std::vector<Econ_Item_Attribute> attributes;
 };
 
