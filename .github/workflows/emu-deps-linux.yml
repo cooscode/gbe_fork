@@ -28,7 +28,7 @@ jobs:
     steps:
       - name: "Lookup cache for deps"
         id: "emu-deps-cache-step"
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           key: "${{ env.DEPS_CACHE_KEY }}-${{ env.PREMAKE_ACTION }}"
           path: "${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}"
@@ -36,25 +36,25 @@ jobs:
       # we need branch because it has build scripts
       - name: "Checkout branch"
         if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: "Clone third-party deps (common/linux)"
         if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: "third-party/common/linux"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/common/linux"
 
       - name: "Clone third-party deps (deps/linux)"
         if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: "third-party/deps/linux"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/linux"
 
       - name: "Clone third-party deps (deps/common)"
         if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: "third-party/deps/common"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/common"
