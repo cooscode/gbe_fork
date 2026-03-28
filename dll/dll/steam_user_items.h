@@ -19,7 +19,6 @@
 #define __INCLUDED_STEAM_USER_ITEMS_H__
 
 #include "base.h"
-#include "econ_item.h"
 
 class Steam_Game_Coordinator;
 

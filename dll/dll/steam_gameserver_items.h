@@ -19,7 +19,6 @@
 #define __INCLUDED_STEAM_GAMESERVER_ITEMS_H__
 
 #include "base.h"
-#include "econ_item.h"
 
 class Steam_Game_Coordinator;
 
@@ -39,9 +38,9 @@ public:
     Steam_GameServer_Items(class Settings *settings, class SteamCallBacks *callbacks, class SteamCallResults *callback_results);
     ~Steam_GameServer_Items();
 
-    void on_items_received(CSteamID steam_id, size_t num_items, SteamAPICall_t api_call, bool success);
-    void on_item_pos_updated(CSteamID steam_id, uint64 item_id, uint32 inv_pos);
-    void on_item_deleted(CSteamID steam_id, uint64 item_id);
+    void callback_items_received(CSteamID steam_id, size_t num_items, SteamAPICall_t api_call, bool success);
+    void callback_item_pos_updated(CSteamID steam_id, uint64 item_id, uint32 inv_pos);
+    void callback_item_deleted(CSteamID steam_id, uint64 item_id);
 
     SteamAPICall_t LoadItems( CSteamID ownerID );
     void LoadItems_old( CSteamID ownerID );

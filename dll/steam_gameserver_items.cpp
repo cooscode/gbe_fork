@@ -34,7 +34,7 @@ Steam_GameServer_Items::~Steam_GameServer_Items()
 {
 }
 
-void Steam_GameServer_Items::on_items_received(CSteamID steam_id, size_t num_items, SteamAPICall_t api_call, bool success)
+void Steam_GameServer_Items::callback_items_received(CSteamID steam_id, size_t num_items, SteamAPICall_t api_call, bool success)
 {
     GSItemCount_t data{};
     data.m_OwnerID = steam_id;
@@ -49,7 +49,7 @@ void Steam_GameServer_Items::on_items_received(CSteamID steam_id, size_t num_ite
     callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
 }
 
-void Steam_GameServer_Items::on_item_pos_updated(CSteamID steam_id, uint64 item_id, uint32 inv_pos)
+void Steam_GameServer_Items::callback_item_pos_updated(CSteamID steam_id, uint64 item_id, uint32 inv_pos)
 {
     GSItemInventoryPosUpdated_t data{};
     data.m_SteamID = steam_id;
@@ -57,7 +57,7 @@ void Steam_GameServer_Items::on_item_pos_updated(CSteamID steam_id, uint64 item_
     callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.15);
 }
 
-void Steam_GameServer_Items::on_item_deleted(CSteamID steam_id, uint64 item_id)
+void Steam_GameServer_Items::callback_item_deleted(CSteamID steam_id, uint64 item_id)
 {
     GSItemDeleted_t data{};
     data.m_SteamID = steam_id;
@@ -181,7 +181,7 @@ bool Steam_GameServer_Items::GetItemAttribute( uint64 ulItemID, uint32 unAttribu
     PRINT_DEBUG("%llu %u", ulItemID, unAttributeIndex);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    for (const auto &[steamID, items] : gc()->get_all_user_items()) {
+    for (const auto &[steam_id, items] : gc()->get_all_user_items()) {
         for (const Econ_Item &item : items) {
             if (item.id != ulItemID)
                 continue;
