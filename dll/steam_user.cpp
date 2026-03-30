@@ -50,6 +50,8 @@ HSteamUser Steam_User::GetHSteamUser()
 void Steam_User::LogOn( CSteamID steamID )
 {
     PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     call_logged_on = true;
     call_logged_off = false;
     logon_time = std::chrono::high_resolution_clock::now();
@@ -62,6 +64,8 @@ void Steam_User::LogOn( CSteamID steamID )
 void Steam_User::LogOff()
 {
     PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     call_logged_on = false;
     call_logged_off = true;
     logoff_time = std::chrono::high_resolution_clock::now();
@@ -80,12 +84,16 @@ void Steam_User::LogOff()
 bool Steam_User::BLoggedOn()
 {
     PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     return !settings->is_offline();
 }
 
 ELogonState Steam_User::GetLogonState()
 {
     PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     if(settings->is_offline())
         return (ELogonState)0;
     else
@@ -95,6 +103,8 @@ ELogonState Steam_User::GetLogonState()
 bool Steam_User::BConnected()
 {
     PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     return !settings->is_offline();
 }
 
@@ -103,6 +113,8 @@ bool Steam_User::BConnected()
 CSteamID Steam_User::GetSteamID()
 {
     PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
     CSteamID id = settings->get_current_steam_id();
 
     PRINT_DEBUG("GetSteamID() call #%u, returning %llu", settings->global_steamid_call_count, id.ConvertToUint64());
