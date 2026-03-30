@@ -106,10 +106,10 @@ public:
 
 	// logon cookie - this is obsolete and never used
 	int GetSteamGameConnectToken( void *pBlob, int cbMaxBlob );
-	bool SetRegistryString( EConfigSubTree eRegistrySubTree, const char *pchKey, const char *pchValue );
-	bool GetRegistryString( EConfigSubTree eRegistrySubTree, const char *pchKey, char *pchValue, int cbValue );
-	bool SetRegistryInt( EConfigSubTree eRegistrySubTree, const char *pchKey, int iValue );
-	bool GetRegistryInt( EConfigSubTree eRegistrySubTree, const char *pchKey, int *piValue );
+	bool SetRegistryString( ERegistrySubTree eRegistrySubTree, const char *pchKey, const char *pchValue );
+	bool GetRegistryString( ERegistrySubTree eRegistrySubTree, const char *pchKey, char *pchValue, int cbValue );
+	bool SetRegistryInt( ERegistrySubTree eRegistrySubTree, const char *pchKey, int iValue );
+	bool GetRegistryInt( ERegistrySubTree eRegistrySubTree, const char *pchKey, int *piValue );
 
     // Multiplayer Authentication functions
 
@@ -332,28 +332,28 @@ public:
     // SteamUser001 --------------------------------------------
     void Init( ICMCallback001 *cmcallback, ISteam2Auth *steam2auth );
     int ProcessCall( int unk );
-    virtual void LogOn( CSteamID *steamID );
-    virtual int CreateAccount( const char *unk1, void *unk2, void *unk3, const char *unk4, int unk5, void *unk6 );
-    virtual bool GSSendLogonRequest( CSteamID *steamID );
-    virtual bool GSSendDisconnect( CSteamID *steamID );
-    virtual bool GSSendStatusResponse( CSteamID *steamID, int nSecondsConnected, int nSecondsSinceLast );
-    virtual bool GSSetStatus( int32 nAppIdServed, uint32 unServerFlags, int cPlayers, int cPlayersMax );
-    virtual void Test_SuspendActivity() {}
-    virtual void Test_ResumeActivity() {}
-    virtual void Test_SendVACResponse( int unk1, void *unk2, int unk3 ) {}
-    virtual void Test_SetFakePrivateIP( uint32 ip ) {}
-    virtual void Test_SendBigMessage() {}
-    virtual bool Test_BBigMessageResponseReceived() { return true; }
-    virtual void Test_SetPktLossPct( int unk1 ) {}
-    virtual void Test_SetForceTCP( bool unk1 ) {}
-    virtual void Test_Heartbeat() {}
-    virtual void Test_FakeDisconnect() {}
-    virtual EUniverse Test_GetEUniverse() { return k_EUniversePublic; }
+    void LogOn_old( CSteamID &steamID );
+    int CreateAccount( const char *unk1, uint8 *unk2, uint8 *unk3, const char *unk4, int unk5, uint8 *unk6 );
+    bool GSSendLogonRequest( CSteamID &steamID );
+    bool GSSendDisconnect( CSteamID &steamID );
+    bool GSSendStatusResponse( CSteamID &steamID, int nSecondsConnected, int nSecondsSinceLast );
+    bool GSSetStatus( int32 nAppIdServed, uint32 unServerFlags, int cPlayers, int cPlayersMax );
+    void Test_SuspendActivity() {}
+    void Test_ResumeActivity() {}
+    void Test_SendVACResponse( int nClientGameID, uint8 *pubResponse, int cubResponse ) {}
+    void Test_SetFakePrivateIP( uint32 unIPPrivate ) {}
+    void Test_SendBigMessage() {}
+    bool Test_BBigMessageResponseReceived() { return true; }
+    void Test_SetPktLossPct( int nPct ) {}
+    void Test_SetForceTCP( bool bForceTCP ) {}
+    void Test_Heartbeat() {}
+    void Test_FakeDisconnect() {}
+    EUniverse Test_GetEUniverse() { return k_EUniversePublic; }
     // SteamUser001 --------------------------------------------
 
     // SteamUser002 (old) --------------------------------------
-    virtual bool GSSetStatus( int32 nAppIdServed, uint32 unServerFlags, int cPlayers, int cPlayersMax, int cBotPlayers, int unGamePort, const char *pchServerName, const char *pchGameDir, const char *pchMapName, const char *pchVersion );
-    virtual void Test_SetMaxUDPConnectionAttempts( int unk1 ) {}
+    bool GSSetStatus( int32 nAppIdServed, uint32 unServerFlags, int cPlayers, int cPlayersMax, int cBotPlayers, int unGamePort, const char *pchServerName, const char *pchGameDir, const char *pchMapName, const char *pchVersion );
+    void Test_SetMaxUDPConnectionAttempts( int unk1 ) {}
     // SteamUser002 (old) --------------------------------------
 
     // SteamUser002 (new) --------------------------------------

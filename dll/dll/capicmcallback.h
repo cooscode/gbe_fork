@@ -24,10 +24,10 @@ typedef void (*OnLogonSuccessFunc)();
 typedef void (*OnLogonFailureFunc)(EResult);
 typedef void (*OnLoggedOffFunc)();
 typedef void (*OnBeginLogonRetryFunc)();
-typedef void (*HandleVACChallengeFunc)(int, void *, int);
-typedef void (*GSHandleClientApproveFunc)(CSteamID *);
-typedef void (*GSHandleClientDenyFunc)(CSteamID *, EDenyReason);
-typedef void (*GSHandleClientKickFunc)(CSteamID *, EDenyReason);
+typedef void (*HandleVACChallengeFunc)(int, uint8 *, int);
+typedef void (*GSHandleClientApproveFunc)(CSteamID &);
+typedef void (*GSHandleClientDenyFunc)(CSteamID &, EDenyReason);
+typedef void (*GSHandleClientKickFunc)(CSteamID &, EDenyReason);
 
 class CCAPICMCallBack : public ICMCallback
 {
@@ -53,13 +53,13 @@ public:
     ~CCAPICMCallBack() {}
 
     void OnLogonSuccess() { OnLogonSuccess_ptr(); }
-    void OnLogonFailure(EResult result) { OnLogonFailure_ptr(result); }
+    void OnLogonFailure(EResult eResult) { OnLogonFailure_ptr(eResult); }
     void OnLoggedOff() { OnLoggedOff_ptr(); }
     void OnBeginLogonRetry() { OnBeginLogonRetry_ptr(); }
-    void HandleVACChallenge(int unk1, void *unk2, int unk3) { HandleVACChallenge_ptr(unk1, unk2, unk3); }
-    void GSHandleClientApprove(CSteamID *steamID) { GSHandleClientApprove_ptr(steamID); }
-    void GSHandleClientDeny(CSteamID *steamID, EDenyReason reason) { GSHandleClientDeny_ptr(steamID, reason); }
-    void GSHandleClientKick(CSteamID *steamID, EDenyReason reason) { GSHandleClientKick_ptr(steamID, reason); }
+    void HandleVACChallenge(int nClientGameID, uint8 *pubChallenge, int cubChallenge) { HandleVACChallenge_ptr(nClientGameID, pubChallenge, cubChallenge); }
+    void GSHandleClientApprove(CSteamID &steamID) { GSHandleClientApprove_ptr(steamID); }
+    void GSHandleClientDeny(CSteamID &steamID, EDenyReason eDenyReason) { GSHandleClientDeny_ptr(steamID, eDenyReason); }
+    void GSHandleClientKick(CSteamID &steamID, EDenyReason eDenyReason) { GSHandleClientKick_ptr(steamID, eDenyReason); }
 
 private:
     OnLogonSuccessFunc OnLogonSuccess_ptr{};
