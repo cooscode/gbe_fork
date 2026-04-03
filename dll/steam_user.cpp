@@ -94,10 +94,17 @@ ELogonState Steam_User::GetLogonState()
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-    if(settings->is_offline())
-        return (ELogonState)0;
-    else
-        return (ELogonState)4; // tested on real steam, undocumented return value
+    if (settings->is_offline()) {
+        if (call_logged_on) {
+            return k_ELogonStateLoggingOn;
+        } else if (call_logged_off) {
+            return k_ELogonStateLoggingOff;
+        } else {
+            return k_ELogonStateNotLoggedOn;
+        }
+    } else {
+        return k_ELogonStateLoggedOn;
+    }
 }
 
 bool Steam_User::BConnected()
