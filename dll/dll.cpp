@@ -454,7 +454,7 @@ STEAMAPI_API void S_CALLTYPE SteamAPI_Shutdown()
         return;
     }
 
-    get_steam_client()->clientShutdown();
+    get_steam_client()->ReleaseUser(user_steam_pipe, CLIENT_HSTEAMUSER);
     get_steam_client()->BReleaseSteamPipe(user_steam_pipe);
     get_steam_client()->BShutdownIfAllPipesClosed();
 
@@ -1297,7 +1297,7 @@ STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_ManualDispatch_GetNextCallback( HSte
 {
     PRINT_DEBUG("%i %p", hSteamPipe, pCallbackMsg);
     Steam_Client *steam_client = get_steam_client();
-    if (!steam_client->steamclient_server_inited) {
+    if (!steam_client->IsServerInit()) {
         while(!server_cb.empty()) server_cb.pop();
     }
 

@@ -183,8 +183,6 @@ public:
 
     PlaytimeCounter* playtime_counter{};
 
-    bool steamclient_server_inited{};
-
     bool gameserver_has_ipv6_functions{};
     int steamclient_version{};
     bool using_old_callbacks{};
