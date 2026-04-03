@@ -1071,7 +1071,17 @@ bool Steam_GameServer::GSSendSteam3UserConnect( CSteamID steamID, uint32 unIPPub
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
     CSteamID ticket_steam_id;
-    return SendUserConnectAndAuthenticate(unIPPublic, pvCookie, cubCookie, &ticket_steam_id);
+    Auth_Data ticket_data = auth_manager->validateTicket(pvCookie, cubCookie, steamID, &ticket_steam_id);
+    if (!ticket_data.id.IsValid())
+        return false;
+
+    // If this function gets called then SteamID was likely obtained from Steam.dll and won't match
+    // the client's Goldberg SteamID. So just ignore SteamID we got from auth ticket.
+    GSClientApprove_t data{};
+    data.m_SteamID = data.m_OwnerSteamID = steamID;
+    callbacks->addCBResult(data.k_iCallback, &data, sizeof(data), 0.1);
+    add_player(steamID);
+    return true;
 }
 
 bool Steam_GameServer::GSRemoveUserConnect( uint32 unUserID )
