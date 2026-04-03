@@ -1880,7 +1880,7 @@ STEAMCLIENT_API void Steam3_LogOn( HSteamUser hUser, uint64 steamID )
 
     ISteamUser002 *su = reinterpret_cast<ISteamUser002 *>(get_steam_client()->GetISteamUser(hUser, "SteamUser002"));
     CSteamID steam_id_struct(steamID);
-    su->LogOn(&steam_id_struct);
+    su->LogOn_old(steam_id_struct);
 }
 
 STEAMCLIENT_API void Steam3_LogOff( HSteamUser hUser )
@@ -1921,7 +1921,7 @@ STEAMCLIENT_API steam_bool Steam3_GSSendLogonRequest( HSteamUser hUser, uint64 s
 
     ISteamUser002 *su = reinterpret_cast<ISteamUser002 *>(get_steam_client()->GetISteamUser(hUser, "SteamUser002"));
     CSteamID steam_id_struct(steamID);
-    return su->GSSendLogonRequest(&steam_id_struct);
+    return su->GSSendLogonRequest(steam_id_struct);
 }
 
 STEAMCLIENT_API steam_bool Steam3_GSSendDisconnect( HSteamUser hUser, uint64 steamID )
@@ -1932,7 +1932,7 @@ STEAMCLIENT_API steam_bool Steam3_GSSendDisconnect( HSteamUser hUser, uint64 ste
 
     ISteamUser002 *su = reinterpret_cast<ISteamUser002 *>(get_steam_client()->GetISteamUser(hUser, "SteamUser002"));
     CSteamID steam_id_struct(steamID);
-    return su->GSSendDisconnect(&steam_id_struct);
+    return su->GSSendDisconnect(steam_id_struct);
 }
 
 STEAMCLIENT_API steam_bool Steam3_GSSendStatusResponse( HSteamUser hUser, uint64 steamID, int nSecondsConnected, int nSecondsSinceLast )
@@ -1943,7 +1943,7 @@ STEAMCLIENT_API steam_bool Steam3_GSSendStatusResponse( HSteamUser hUser, uint64
 
     ISteamUser002 *su = reinterpret_cast<ISteamUser002 *>(get_steam_client()->GetISteamUser(hUser, "SteamUser002"));
     CSteamID steam_id_struct(steamID);
-    return su->GSSendStatusResponse(&steam_id_struct, nSecondsConnected, nSecondsSinceLast);
+    return su->GSSendStatusResponse(steam_id_struct, nSecondsConnected, nSecondsSinceLast);
 }
 
 STEAMCLIENT_API steam_bool Steam3_GSSetStatus( HSteamUser hUser, int32 nAppIdServed, uint32 unServerFlags, int cPlayers, int cPlayersMax, int cBotPlayers, int unGamePort, const char *pchServerName, const char *pchGameDir, const char *pchMapName, const char *pchVersion )
