@@ -100,7 +100,7 @@ Steam_Client::Steam_Client()
     PRINT_DEBUG("init client");
     steam_overlay = new Steam_Overlay(settings_client, local_storage, callback_results_client, callbacks_client, run_every_runcb, network);
 
-    steam_user = new Steam_User(settings_client, local_storage, network, callback_results_client, callbacks_client);
+    steam_user = new Steam_User(settings_client, local_storage, network, callback_results_client, callbacks_client, false);
     steam_friends = new Steam_Friends(settings_client, local_storage, network, callback_results_client, callbacks_client, run_every_runcb, steam_overlay);
     steam_utils = new Steam_Utils(settings_client, callback_results_client, callbacks_client, steam_overlay);
     
@@ -143,7 +143,7 @@ Steam_Client::Steam_Client()
     PRINT_DEBUG("init gameserver");
 
     steam_gameserver = new Steam_GameServer(settings_server, network, callbacks_server);
-    steam_gameserver_user = new Steam_User(settings_server, local_storage, network, callback_results_server, callbacks_server);
+    steam_gameserver_user = new Steam_User(settings_server, local_storage, network, callback_results_server, callbacks_server, true);
     steam_gameserver_utils = new Steam_Utils(settings_server, callback_results_server, callbacks_server, steam_overlay);
     steam_gameserverstats = new Steam_GameServerStats(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
     steam_gameserver_networking = new Steam_Networking(settings_server, network, callbacks_server, run_every_runcb);
