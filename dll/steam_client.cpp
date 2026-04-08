@@ -100,7 +100,7 @@ Steam_Client::Steam_Client()
     PRINT_DEBUG("init client");
     steam_overlay = new Steam_Overlay(settings_client, local_storage, callback_results_client, callbacks_client, run_every_runcb, network);
 
-    steam_user = new Steam_User(settings_client, local_storage, network, callback_results_client, callbacks_client);
+    steam_user = new Steam_User(settings_client, local_storage, network, callback_results_client, callbacks_client, false);
     steam_friends = new Steam_Friends(settings_client, local_storage, network, callback_results_client, callbacks_client, run_every_runcb, steam_overlay);
     steam_utils = new Steam_Utils(settings_client, callback_results_client, callbacks_client, steam_overlay);
     
@@ -143,7 +143,7 @@ Steam_Client::Steam_Client()
     PRINT_DEBUG("init gameserver");
 
     steam_gameserver = new Steam_GameServer(settings_server, network, callbacks_server);
-    steam_gameserver_user = new Steam_User(settings_server, local_storage, network, callback_results_server, callbacks_server);
+    steam_gameserver_user = new Steam_User(settings_server, local_storage, network, callback_results_server, callbacks_server, true);
     steam_gameserver_utils = new Steam_Utils(settings_server, callback_results_server, callbacks_server, steam_overlay);
     steam_gameserverstats = new Steam_GameServerStats(settings_server, network, callback_results_server, callbacks_server, run_every_runcb);
     steam_gameserver_networking = new Steam_Networking(settings_server, network, callbacks_server, run_every_runcb);
@@ -257,12 +257,14 @@ Steam_Client::~Steam_Client()
 
 void Steam_Client::userLogIn()
 {
+    callback_results_client->clear();
     network->addListenId(settings_client->get_local_steam_id());
     user_logged_in = true;
 }
 
 void Steam_Client::serverInit()
 {
+    callback_results_server->clear();
     server_init = true;
 }
 
@@ -278,11 +280,13 @@ bool Steam_Client::IsUserLogIn()
 
 void Steam_Client::serverShutdown()
 {
+    callback_results_server->clear();
     server_init = false;
 }
 
 void Steam_Client::clientShutdown()
 {
+    callback_results_client->clear();
     user_logged_in = false;
 }
 
@@ -383,7 +387,6 @@ HSteamUser Steam_Client::CreateLocalUser( HSteamPipe *phSteamPipe, EAccountType 
     HSteamPipe pipe = CreateSteamPipe();
     if (phSteamPipe) *phSteamPipe = pipe;
     steam_pipes[pipe] = Steam_Pipe::SERVER;
-    steamclient_server_inited = true;
     return SERVER_HSTEAMUSER;
     //}
 }
@@ -398,12 +401,18 @@ HSteamUser Steam_Client::CreateLocalUser( HSteamPipe *phSteamPipe )
 void Steam_Client::ReleaseUser( HSteamPipe hSteamPipe, HSteamUser hUser )
 {
     PRINT_DEBUG_ENTRY();
-    if (hUser == SERVER_HSTEAMUSER && steam_pipes.count(hSteamPipe)) {
+
+    if (!steam_pipes.count(hSteamPipe))
+        return;
+
+    if (hUser == SERVER_HSTEAMUSER) {
         if (steam_gameserver->BLoggedOn()) {
             steam_gameserver->LogOff();
         }
 
-        steamclient_server_inited = false;
+        serverShutdown();
+    } else if (hUser == CLIENT_HSTEAMUSER) {
+        clientShutdown();
     }
 }
 
@@ -997,12 +1006,12 @@ void Steam_Client::RunCallbacks(bool runClientCB, bool runGameserverCB)
     // PRINT_DEBUG("steam_user *********");
     steam_gameserver_user->RunCallbacks();
 
-    if (runClientCB) {
+    if (runClientCB && IsUserLogIn()) {
         // PRINT_DEBUG("callback_results_client *********");
         callback_results_client->runCallResults();
     }
 
-    if (runGameserverCB) {
+    if (runGameserverCB && IsServerInit()) {
         // PRINT_DEBUG("callback_results_server *********");
         callback_results_server->runCallResults();
     }

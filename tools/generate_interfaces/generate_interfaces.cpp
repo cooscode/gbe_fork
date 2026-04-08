@@ -8,6 +8,7 @@
 // static char old_xxx[128] = ...
 const static std::vector<std::string> interface_patterns = {
     R"(STEAMAPPS_INTERFACE_VERSION\d+)",
+    R"(SteamApps\d+)",
     R"(STEAMAPPLIST_INTERFACE_VERSION\d+)",
     R"(STEAMAPPTICKET_INTERFACE_VERSION\d+)",
     R"(SteamClient\d+)",
