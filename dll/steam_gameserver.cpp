@@ -93,12 +93,13 @@ void Steam_GameServer::set_version(const char *pchVersionString)
     try {
         auto ver = std::stoul(version);
         server_data.set_version(ver);
+        server_data.set_version_name(pchVersionString);
         PRINT_DEBUG("set version to %lu", ver);
     } catch (...) {
         server_data.set_version(0);
+        server_data.set_version_name("");
         PRINT_DEBUG("not a number '%s'", pchVersionString);
     }
-
 }
 
 void Steam_GameServer::add_player(CSteamID steamID)
@@ -143,6 +144,10 @@ Steam_GameServer::~Steam_GameServer()
     auth_manager = nullptr;
 }
 
+void Steam_GameServer::set_protocol_version(unsigned short nProtocolVersion)
+{
+    server_data.set_protocol_version(nProtocolVersion);
+}
 
 std::vector<std::pair<CSteamID, Gameserver_Player_Info_t>>* Steam_GameServer::get_players()
 {
@@ -172,6 +177,12 @@ bool Steam_GameServer::InitGameServer( uint32 unIP, uint16 usGamePort, uint16 us
     set_appid(nGameAppId, "", false);
     set_version(pchVersionString);
     server_data.set_offline(false);
+    // Fixed versions sent by SteamGameServer011+. Actual steamclient.dll behavior.
+    if (nGameAppId < 200) {
+        server_data.set_protocol_version(48);
+    } else {
+        server_data.set_protocol_version(17);
+    }
 
     //TODO: flags should be k_unServerFlag
     flags = unFlags;
