@@ -586,7 +586,7 @@ bool Steam_GameServer::BSetServerType( uint32 unServerFlags, uint32 unGameIP, ui
     server_data.set_port(unGamePort);
     server_data.set_spectator_port(unSpectatorPort);
     server_data.set_query_port(usQueryPort);
-    server_data.set_game_dir(pchGameDir ? pchGameDir : "");
+    server_data.set_mod_dir(pchGameDir ? pchGameDir : "");
     set_version(pchVersion);
     server_data.set_offline(false);
 
@@ -1018,7 +1018,7 @@ bool Steam_GameServer::Obsolete_GSSetStatus( int32 nAppIdServed, uint32 unServer
     server_data.set_spectator_port(0);
     server_data.set_server_name(pchServerName);
     server_data.set_spectator_server_name(pchServerName);
-    server_data.set_game_dir(pchGameDir);
+    server_data.set_mod_dir(pchGameDir);
     server_data.set_map_name(pchMapName);
     set_version(pchVersion);
     server_data.set_offline(false);
