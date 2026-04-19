@@ -192,7 +192,8 @@ public:
     int steamclient_version{};
     bool using_old_callbacks{};
     
-    unsigned steam_pipe_counter = 1;
+    uint32 steam_pipe_counter = 1;
+    std::priority_queue<uint32, std::vector<uint32>, std::greater<>> freed_steam_pipes{};
     std::map<HSteamPipe, Steam_Pipe> steam_pipes{};
 
 
