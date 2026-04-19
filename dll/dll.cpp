@@ -1309,8 +1309,6 @@ static void cb_add_queue_client(std::vector<char> result, int callback)
     client_cb.push(cb);
 }
 
-static std::unordered_map<HSteamPipe, bool> got_last_callback;
-
 /// Inform the API that you wish to use manual event dispatch.  This must be called after SteamAPI_Init, but before
 /// you use any of the other manual dispatch functions below.
 STEAMAPI_API void S_CALLTYPE SteamAPI_ManualDispatch_Init()
@@ -1335,9 +1333,9 @@ STEAMAPI_API void S_CALLTYPE SteamAPI_ManualDispatch_RunFrame( HSteamPipe hSteam
         return;
     }
 
-    if (it->second == Steam_Pipe::SERVER) {
+    if (it->second.type == Steam_Pipe_Type::SERVER) {
         steam_client->RunCallbacks(false, true);
-    } else if (it->second == Steam_Pipe::CLIENT) {
+    } else if (it->second.type == Steam_Pipe_Type::CLIENT) {
         steam_client->RunCallbacks(true, false);
     }
 }
@@ -1348,15 +1346,6 @@ STEAMAPI_API void S_CALLTYPE SteamAPI_ManualDispatch_RunFrame( HSteamPipe hSteam
 STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_ManualDispatch_GetNextCallback( HSteamPipe hSteamPipe, CallbackMsg_t *pCallbackMsg )
 {
     PRINT_DEBUG("%i %p", hSteamPipe, pCallbackMsg);
-
-    auto it_glcb = got_last_callback.find(hSteamPipe);
-    if (it_glcb != got_last_callback.end()) {
-        if (it_glcb->second) {
-            PRINT_DEBUG("last cb not freed on pipe %d!", hSteamPipe);
-            return false;
-        }
-    }
-
     Steam_Client *steam_client = get_steam_client();
     if (!steam_client->IsServerInit()) {
         while(!server_cb.empty()) server_cb.pop();
@@ -1370,10 +1359,16 @@ STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_ManualDispatch_GetNextCallback( HSte
 
     std::queue<struct cb_data> *q = NULL;
     HSteamUser m_hSteamUser = 0;
-    if (it->second == Steam_Pipe::SERVER) {
+
+    if (it->second.got_last_cb) {
+        PRINT_DEBUG("last cb not freed on pipe %d!", hSteamPipe);
+        return false;
+    }
+
+    if (it->second.type == Steam_Pipe_Type::SERVER) {
         q = &server_cb;
         m_hSteamUser = SERVER_HSTEAMUSER;
-    } else if (it->second == Steam_Pipe::CLIENT) {
+    } else if (it->second.type == Steam_Pipe_Type::CLIENT) {
         q = &client_cb;
         m_hSteamUser = CLIENT_HSTEAMUSER;
     } else {
@@ -1392,7 +1387,7 @@ STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_ManualDispatch_GetNextCallback( HSte
         pCallbackMsg->m_pubParam = (uint8 *)&(q->front().result[0]);
         pCallbackMsg->m_cubParam = static_cast<unsigned long>(q->front().result.size());
         PRINT_DEBUG("cb number %i", q->front().cb_id);
-        got_last_callback.insert_or_assign(hSteamPipe, true);
+        it->second.got_last_cb = true;
         return true;
     }
 
@@ -1411,9 +1406,9 @@ STEAMAPI_API void S_CALLTYPE SteamAPI_ManualDispatch_FreeLastCallback( HSteamPip
         return;
     }
 
-    if (it->second == Steam_Pipe::SERVER) {
+    if (it->second.type == Steam_Pipe_Type::SERVER) {
         q = &server_cb;
-    } else if (it->second == Steam_Pipe::CLIENT) {
+    } else if (it->second.type == Steam_Pipe_Type::CLIENT) {
         q = &client_cb;
     } else {
         return;
@@ -1421,10 +1416,7 @@ STEAMAPI_API void S_CALLTYPE SteamAPI_ManualDispatch_FreeLastCallback( HSteamPip
 
     if (!q->empty()) q->pop();
 
-    auto it_glcb = got_last_callback.find(hSteamPipe);
-    if (it_glcb != got_last_callback.end()) {
-        it_glcb->second = false;
-    }
+    it->second.got_last_cb = false;
 }
 
 /// Return the call result for the specified call on the specified pipe.  You really should
@@ -1437,9 +1429,9 @@ STEAMAPI_API steam_bool S_CALLTYPE SteamAPI_ManualDispatch_GetAPICallResult( HSt
         return false;
     }
 
-    if (steam_client->steam_pipes[hSteamPipe] == Steam_Pipe::SERVER) {
+    if (steam_client->steam_pipes[hSteamPipe].type == Steam_Pipe_Type::SERVER) {
         return steam_client->steam_gameserver_utils->GetAPICallResult(hSteamAPICall, pCallback, cubCallback, iCallbackExpected, pbFailed);
-    } else if (steam_client->steam_pipes[hSteamPipe] == Steam_Pipe::CLIENT) {
+    } else if (steam_client->steam_pipes[hSteamPipe].type == Steam_Pipe_Type::CLIENT) {
         return steam_client->steam_utils->GetAPICallResult(hSteamAPICall, pCallback, cubCallback, iCallbackExpected, pbFailed);
     } else {
         return false;
