@@ -1,4 +1,4 @@
-require("premake", ">=5.0.0-beta2")
+require("premake", ">=5.0.0-beta8")
 
 
 -- add "-Wl,--whole-archive -Wl,-Bstatic -lmylib -Wl,-Bdynamic -Wl,--no-whole-archive"
@@ -234,6 +234,7 @@ local x32_deps_include = {
     path.join(deps_dir, "mbedtls/install32/include"),
     path.join(deps_dir, "opus/install32/include"),
     path.join(deps_dir, "portaudio/install32/include"),
+    path.join(deps_dir, "sdl/install32/include"),
 }
 
 local x32_deps_overlay_include = {
@@ -250,6 +251,7 @@ local x64_deps_include = {
     path.join(deps_dir, "mbedtls/install64/include"),
     path.join(deps_dir, "opus/install64/include"),
     path.join(deps_dir, "portaudio/install64/include"),
+    path.join(deps_dir, "sdl/install64/include"),
 }
 
 local x64_deps_overlay_include = {
@@ -300,7 +302,7 @@ end
 
 local zlib_archive_name = 'z'
 if os.target() == 'windows' then
-    zlib_archive_name = 'zlibstatic' -- even on MinGw we need this name
+    zlib_archive_name = 'zs' -- even on MinGw we need this name
 end
 
 local deps_link = {
@@ -312,13 +314,11 @@ local deps_link = {
     "mbedx509"           .. static_postfix,
     "opus"               .. static_postfix,
     "portaudio"          .. static_postfix,
+    "SDL3-static"        .. static_postfix,
 }
 -- add protobuf libs
 table_append(deps_link, {
     lib_prefix .. "protobuf"                      .. static_postfix,
-    "absl_bad_any_cast_impl"                      .. static_postfix,
-    "absl_bad_optional_access"                    .. static_postfix,
-    "absl_bad_variant_access"                     .. static_postfix,
     "absl_base"                                   .. static_postfix,
     "absl_city"                                   .. static_postfix,
     "absl_civil_time"                             .. static_postfix,
@@ -357,7 +357,6 @@ table_append(deps_link, {
     "absl_int128"                                 .. static_postfix,
     "absl_kernel_timeout_internal"                .. static_postfix,
     "absl_leak_check"                             .. static_postfix,
-    "absl_log_entry"                              .. static_postfix,
     "absl_log_flags"                              .. static_postfix,
     "absl_log_globals"                            .. static_postfix,
     "absl_log_initialize"                         .. static_postfix,
@@ -380,7 +379,7 @@ table_append(deps_link, {
     "absl_random_distributions"                   .. static_postfix,
     "absl_random_internal_distribution_test_util" .. static_postfix,
     "absl_random_internal_platform"               .. static_postfix,
-    "absl_random_internal_pool_urbg"              .. static_postfix,
+    "absl_random_internal_entropy_pool"           .. static_postfix,
     "absl_random_internal_randen"                 .. static_postfix,
     "absl_random_internal_randen_hwaes"           .. static_postfix,
     "absl_random_internal_randen_hwaes_impl"      .. static_postfix,
@@ -420,6 +419,7 @@ local common_link_win = {
     "Winmm"    .. static_postfix,
     "Bcrypt"   .. static_postfix,
     "Dbghelp"  .. static_postfix,
+    "ntdll"    .. static_postfix,
     -- gamepad
     "Xinput"   .. static_postfix,
     -- imgui / overlay
@@ -465,6 +465,7 @@ local x32_deps_libdir = {
     path.join(deps_dir, "mbedtls/install32/lib"),
     path.join(deps_dir, "opus/install32/lib"),
     path.join(deps_dir, "portaudio/install32/lib"),
+    path.join(deps_dir, "sdl/install32/lib"),
 }
 
 local x32_deps_overlay_libdir = {
@@ -482,6 +483,7 @@ local x64_deps_libdir = {
     path.join(deps_dir, "ingame_overlay/install64/lib"),
     path.join(deps_dir, "opus/install64/lib"),
     path.join(deps_dir, "portaudio/install64/lib"),
+    path.join(deps_dir, "sdl/install64/lib"),
 }
 
 local x64_deps_overlay_libdir = {
