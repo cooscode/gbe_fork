@@ -104,7 +104,7 @@ jobs:
 
   emu-linux-prep:
     needs: ["emu-linux-all"]
-    runs-on: "ubuntu-22.04"
+    runs-on: "ubuntu-24.04"
     steps:
       # we need branch because it has package scripts
       - name: "Checkout branch"
@@ -193,7 +193,7 @@ jobs:
 
   migrate_gse_script-win-prep:
     needs: ["migrate_gse_script-win"]
-    runs-on: "windows-2022"
+    runs-on: "windows-2025-vs2026"
     steps:
       # on Windows Git will auto change line ending to CRLF, not preferable
       - name: "Ensure LF line ending"
@@ -253,7 +253,7 @@ jobs:
 
   migrate_gse_script-linux-prep:
     needs: ["migrate_gse_script-linux"]
-    runs-on: "ubuntu-22.04"
+    runs-on: "ubuntu-24.04"
     steps:
       # we need branch because it has package scripts
       - name: "Checkout branch"
