@@ -52,7 +52,7 @@ jobs:
         if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
         uses: actions/checkout@v6
         with:
-          ref: "third-party/common/win"
+          ref: "thirdparty-common-win-premake"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
 
       - name: "Clone third-party deps (deps/win)"
@@ -66,15 +66,8 @@ jobs:
         if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
         uses: actions/checkout@v6
         with:
-          ref: "third-party/deps/common"
+          ref: "thirdparty-deps-update"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/common"
-
-      - name: "Clone third-party deps (common/win)"
-        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
-        uses: actions/checkout@v6
-        with:
-          ref: "third-party/common/win"
-          path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
 
       - name: "Build deps"
         if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'

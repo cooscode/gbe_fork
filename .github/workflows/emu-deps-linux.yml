@@ -42,7 +42,7 @@ jobs:
         if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
         uses: actions/checkout@v6
         with:
-          ref: "third-party/common/linux"
+          ref: "thirdparty-common-linux-premake"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/common/linux"
 
       - name: "Clone third-party deps (deps/linux)"
@@ -56,7 +56,7 @@ jobs:
         if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
         uses: actions/checkout@v6
         with:
-          ref: "third-party/deps/common"
+          ref: "thirdparty-deps-update"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/common"
 
       # fix folder permissions! not sure why this fails
