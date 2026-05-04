@@ -110,7 +110,7 @@ jobs:
       # build target
       - name: "Build target"
         shell: "bash"
-        working-directory: "${{ github.workspace }}/build/project/gmake2/linux"
+        working-directory: "${{ github.workspace }}/build/project/gmake/linux"
         run: |
           echo "dry run..."
           make -n -j ${{ env.MAX_PARALLEL_JOBS }} config=${{ matrix.cfg }}_${{ matrix.arch }} ${{ matrix.prj }}
