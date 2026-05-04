@@ -67,7 +67,7 @@ jobs:
       - name: "Clone third-party build helpers (common/linux)"
         uses: actions/checkout@v6
         with:
-          ref: "third-party/common/linux"
+          ref: "thirdparty-common-linux-premake"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/common/linux"
 
       - name: "Clone third-party build helpers (build/linux)"
@@ -89,7 +89,7 @@ jobs:
         working-directory: "${{ github.workspace }}"
         run: |
           sudo chmod 777 ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5
-          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5.lua --genproto --emubuild=${{ github.sha }} --os=linux gmake2
+          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5.lua --genproto --emubuild=${{ github.sha }} --os=linux gmake
 
       # mandatory Linux packages
       - name: "Install required packages"
