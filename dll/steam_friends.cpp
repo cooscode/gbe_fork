@@ -16,6 +16,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "dll/steam_friends.h"
+#include "dll/dll.h"
 
 #define SEND_FRIEND_RATE 4.0
 
@@ -70,6 +71,11 @@ struct Avatar_Numbers Steam_Friends::add_friend_avatars(CSteamID id)
         "account_avatar.jpg",
         "account_avatar.jpeg",
     };
+    static const std::initializer_list<std::string> avatar_icons_default = {
+        "account_avatar_default.png",
+        "account_avatar_default.jpg",
+        "account_avatar_default.jpeg",
+    };
 
     if (!settings->disable_account_avatar && (id == settings->get_local_steam_id())) {
         std::string file_path{};
@@ -103,7 +109,7 @@ struct Avatar_Numbers Steam_Friends::add_friend_avatars(CSteamID id)
 
             // try local location first, then try global location
             for (const auto &settings_path : { Local_Storage::get_game_settings_path(), local_storage->get_global_settings_path() }) {
-                for (const auto &file_name : avatar_icons) {
+                for (const auto &file_name : avatar_icons_default) {
                     file_path = settings_path + file_name;
                     file_size = file_size_(file_path);
                     if (file_size) break;
@@ -780,12 +786,23 @@ void Steam_Friends::SetInGameVoiceSpeaking( CSteamID steamIDUser, bool bSpeaking
 
 
 // activates the game overlay, with an optional dialog to open 
-// valid options are "Friends", "Community", "Players", "Settings", "OfficialGameGroup", "Stats", "Achievements"
+// valid options are "Friends", "Community", "Players", "Settings", "OfficialGameGroup", "Stats", "Achievements", "LobbyInvite"
 void Steam_Friends::ActivateGameOverlay( const char *pchDialog )
 {
     PRINT_DEBUG("%s", pchDialog);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    overlay->OpenOverlay(pchDialog);
+
+    if ((strncmp(pchDialog, "LobbyInvite", sizeof("LobbyInvite") - 1) == 0)) {
+        std::string connect_str = get_friend_rich_presence_silent(settings->get_local_steam_id(), "connect");
+
+        if (connect_str.length() > 0) {
+            ActivateGameOverlayInviteDialogConnectString(connect_str.c_str());
+        } else if (settings->get_lobby().IsValid()) {
+            ActivateGameOverlayInviteDialog(settings->get_lobby());
+        }
+    } else {
+        overlay->OpenOverlay(pchDialog);
+    }
 }
 
 
@@ -850,6 +867,18 @@ void Steam_Friends::ActivateGameOverlayInviteDialog( CSteamID steamIDLobby )
 {
     PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    // Invite all friends playing the same game
+    for (auto &fr : friends) {
+        if (settings->hasOverlayAutoSendToFriend(fr.id()) && is_appid_compatible(&fr) && steamIDLobby.IsValid() && fr.lobby_id() != settings->get_lobby().ConvertToUint64()) {
+            uint64 friend_id = (uint64)fr.id();
+
+            Steam_Matchmaking* steamMatchmaking = get_steam_client()->steam_matchmaking;
+            steamMatchmaking->InviteUserToLobby(steamIDLobby, friend_id);
+            PRINT_DEBUG("sent lobby invitation to friend with id = %llu", friend_id);
+        }
+    }
+
     overlay->OpenOverlayInvite(steamIDLobby);
 }
 
@@ -1359,8 +1388,20 @@ bool Steam_Friends::RegisterProtocolInOverlayBrowser( const char *pchProtocol )
 // Activates the game overlay to open an invite dialog that will send the provided Rich Presence connect string to selected friends
 void Steam_Friends::ActivateGameOverlayInviteDialogConnectString( const char *pchConnectString )
 {
-    PRINT_DEBUG_TODO();
+    PRINT_DEBUG_ENTRY();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    // Invite all friends playing the same game
+    for (auto &fr : friends) {
+        if (settings->hasOverlayAutoSendToFriend(fr.id()) && is_appid_compatible(&fr) && fr.lobby_id() != settings->get_lobby().ConvertToUint64()) {
+            uint64 friend_id = (uint64)fr.id();
+
+            InviteUserToGame(friend_id, pchConnectString);
+            PRINT_DEBUG("sent game invitation to friend with id = %llu", friend_id);
+        }
+    }
+
+    overlay->OpenOverlay("Friends");
 }
 
 // Steam Community items equipped by a user on their profile

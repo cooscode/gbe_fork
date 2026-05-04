@@ -109,6 +109,8 @@ struct Controller_Settings {
     std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> action_sets{};
     std::map<std::string, std::string> action_set_layer_parents{};
     std::map<std::string, std::map<std::string, std::pair<std::set<std::string>, std::string>>> action_set_layers{};
+    std::string controller_type_override{};
+    bool enabled{};
 };
 
 struct Group_Clans {
@@ -219,6 +221,7 @@ private:
     std::set<AppId_t> installed_app_ids{};
 
     std::map<AppId_t, std::string> app_paths{};
+    std::map<AppId_t, std::string> purchased_keys{};
     std::vector<struct Mod_entry> mods{};
     std::map<std::string, Leaderboard_config> leaderboards{};
     std::map<std::string, Stat_config> stats{};
@@ -322,7 +325,6 @@ public:
     struct Controller_Settings controller_settings{};
     std::string glyphs_directory{};
 
-
     // allow Steam_User_Stats::FindLeaderboard() to always succeed and create the given unknown leaderboard
     bool disable_leaderboards_create_unknown = false;
     // share leaderboards with other players playing the same game on the same network
@@ -342,7 +344,7 @@ public:
     int overlay_renderer_detector_timeout_sec = 15; // "Saints Row (2022)" takes almost ~8 sec to detect renderer (DX12)
     bool disable_overlay_achievement_notification = false;
     bool disable_overlay_friend_notification = false;
-    bool disable_overlay_achievement_progress = false;
+    bool disable_overlay_achievement_progress = true;
     unsigned overlay_fps_avg_window = 10;
     float overlay_stats_pos_x = 0.0f;
     float overlay_stats_pos_y = 0.0f;
@@ -361,13 +363,25 @@ public:
     bool auto_accept_any_overlay_invites = false;
     // list of user steam IDs to auto-accept invites from
     std::set<uint64_t> auto_accept_overlay_invites_friends{};
+    // whether to auto send any overlay invites
+    bool auto_send_any_overlay_invites = false;
+    // list of user steam IDs to auto-send invites to
+    std::set<uint64_t> auto_send_overlay_invites_friends{};
     bool overlay_always_show_user_info = false;
     bool overlay_always_show_fps = false;
     bool overlay_always_show_frametime = false;
     bool overlay_always_show_playtime = false;
+    // keys used to toggle the overlay, default = Shift + Tab
+    std::vector<std::string> overlay_toggle_keys{};
 
     // free weekend
     bool free_weekend = false;
+
+    // voice chat
+    bool enable_voice_chat = false;
+
+    // only use 32 bits for inventory item ids
+    bool use_32bit_inventory_item_ids = false;
 
 
 #ifdef LOBBY_CONNECT
@@ -422,6 +436,10 @@ public:
     void setAppInstallPath(AppId_t appID, const std::string &path);
     bool getAppInstallPath(AppId_t appID, std::string &path);
 
+    //Purchased keys
+    void setPurchasedKey(AppId_t appID, const std::string &key);
+    bool getPurchasedKey(AppId_t appID, std::string &key) const;
+
     //mod stuff
     void addMod(PublishedFileId_t id, const std::string &title, const std::string &path);
     void addModDetails(PublishedFileId_t id, const Mod_entry &details);
@@ -446,6 +464,12 @@ public:
     void addFriendToOverlayAutoAccept(uint64_t friend_id);
     bool hasOverlayAutoAcceptInviteFromFriend(uint64_t friend_id) const;
     size_t overlayAutoAcceptInvitesCount() const;
+
+    // overlay auto send stuff
+    void autoSendAnyOverlayInvites(bool value);
+    void addFriendToOverlayAutoSend(uint64_t friend_id);
+    bool hasOverlayAutoSendToFriend(uint64_t friend_id) const;
+    size_t overlayAutoSendInvitesCount() const;
 };
 
 #endif // SETTINGS_INCLUDE_H

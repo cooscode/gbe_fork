@@ -31,7 +31,6 @@ constexpr const static char config_ini_overlay[] = "configs.overlay.ini";
 constexpr const static char config_ini_user[]    = "configs.user.ini";
 
 static CSimpleIniA ini{};
-
 typedef struct IniValue {
     enum class Type {
         STR,
@@ -195,6 +194,28 @@ static void load_subscribed_groups_clans(const std::string &base_path, Settings 
                 PRINT_DEBUG("Added clan %s", clan_name.c_str());
             } catch (...) {}
         }
+    }
+}
+
+// overlay::hotkeys
+static void parse_overlay_hotkeys(class Settings *settings_client, class Settings *settings_server)
+{
+    // avoid including overlay header here, just save the strings and let the overlay class translate them
+    auto combo_str = ini.GetValue("overlay::hotkeys", "key_combo");
+    if (combo_str && combo_str[0]) {
+        auto combo = common_helpers::str_split(combo_str, "+");
+        std::for_each(combo.begin(), combo.end(),
+            [](std::string &item){ item = common_helpers::str_strip(item); }
+        );
+        combo.erase(
+            std::remove_if(
+                combo.begin(), combo.end(),
+                [](const std::string& item) { return item.empty(); }
+            ),
+            combo.end()
+        );
+        settings_client->overlay_toggle_keys = combo;
+        settings_server->overlay_toggle_keys = combo;
     }
 }
 
@@ -518,18 +539,84 @@ static void load_gamecontroller_settings(Settings *settings)
     settings->glyphs_directory = path + (PATH_SEPARATOR "glyphs" PATH_SEPARATOR);
 }
 
+// controller
+static void parse_controller_config(class Settings *settings_client)
+{
+    std::string type(common_helpers::to_upper(common_helpers::string_strip(ini.GetValue("app::controller", "type", ""))));
+    settings_client->controller_settings.controller_type_override = type;
+    PRINT_DEBUG("Setting Controller type override to: '%s'", type.c_str());
+    
+    bool enabled = ini.GetBoolValue("app::controller", "steam_input", false);
+    settings_client->controller_settings.enabled = enabled;
+    if (enabled) {
+        PRINT_DEBUG("Enable SteamInput");
+    }
+    else {
+        PRINT_DEBUG("Disable SteamInput");
+    }
+}
+
 // steam_appid.txt
 static uint32 parse_steam_app_id(const std::string &program_path)
 {
     uint32 appid = 0;
 
+    // try env vars
+    std::string str_appid = get_env_variable("SteamAppId");
+    std::string str_gameid = get_env_variable("SteamGameId");
+    std::string str_overlay_gameid = get_env_variable("SteamOverlayGameId");
+
+    PRINT_DEBUG("str_appid %s str_gameid: %s str_overlay_gameid: %s", str_appid.c_str(), str_gameid.c_str(), str_overlay_gameid.c_str());
+    uint32 appid_env = 0;
+    uint32 gameid_env = 0;
+    uint32 overlay_gameid = 0;
+
+    if (str_appid.size() > 0) {
+        try {
+            appid_env = std::stoul(str_appid);
+        } catch (...) {
+            appid_env = 0;
+        }
+    }
+
+    if (str_gameid.size() > 0) {
+        try {
+            gameid_env = std::stoul(str_gameid);
+        } catch (...) {
+            gameid_env = 0;
+        }
+    }
+
+    if (str_overlay_gameid.size() > 0) {
+        try {
+            overlay_gameid = std::stoul(str_overlay_gameid);
+        } catch (...) {
+            overlay_gameid = 0;
+        }
+    }
+
+    PRINT_DEBUG("appid_env %u gameid_env: %u overlay_gameid: %u", appid_env, gameid_env, overlay_gameid);
+    if (appid_env) {
+        appid = appid_env;
+    }
+
+    if (gameid_env) {
+        appid = gameid_env;
+    }
+
+    if (overlay_gameid) {
+        appid = overlay_gameid;
+    }
+
     // try steam_settings folder
     char array[10] = {};
     array[0] = '0';
-    Local_Storage::get_file_data(Local_Storage::get_game_settings_path() + "steam_appid.txt", array, sizeof(array) - 1);
-    try {
-        appid = std::stoul(array);
-    } catch (...) {}
+    if (!appid) {
+        Local_Storage::get_file_data(Local_Storage::get_game_settings_path() + "steam_appid.txt", array, sizeof(array) - 1);
+        try {
+            appid = std::stoul(array);
+        } catch (...) {}
+    }
 
     // try current dir
     if (!appid) {
@@ -551,55 +638,6 @@ static uint32 parse_steam_app_id(const std::string &program_path)
         } catch (...) {}
     }
 
-    // try env vars
-    if (!appid) {
-        std::string str_appid = get_env_variable("SteamAppId");
-        std::string str_gameid = get_env_variable("SteamGameId");
-        std::string str_overlay_gameid = get_env_variable("SteamOverlayGameId");
-        
-        PRINT_DEBUG("str_appid %s str_gameid: %s str_overlay_gameid: %s", str_appid.c_str(), str_gameid.c_str(), str_overlay_gameid.c_str());
-        uint32 appid_env = 0;
-        uint32 gameid_env = 0;
-        uint32 overlay_gameid = 0;
-
-        if (str_appid.size() > 0) {
-            try {
-                appid_env = std::stoul(str_appid);
-            } catch (...) {
-                appid_env = 0;
-            }
-        }
-
-        if (str_gameid.size() > 0) {
-            try {
-                gameid_env = std::stoul(str_gameid);
-            } catch (...) {
-                gameid_env = 0;
-            }
-        }
-
-        if (str_overlay_gameid.size() > 0) {
-            try {
-                overlay_gameid = std::stoul(str_overlay_gameid);
-            } catch (...) {
-                overlay_gameid = 0;
-            }
-        }
-
-        PRINT_DEBUG("appid_env %u gameid_env: %u overlay_gameid: %u", appid_env, gameid_env, overlay_gameid);
-        if (appid_env) {
-            appid = appid_env;
-        }
-
-        if (gameid_env) {
-            appid = gameid_env;
-        }
-
-        if (overlay_gameid) {
-            appid = overlay_gameid;
-        }
-    }
-
     PRINT_DEBUG("final appid = %u", appid);
     return appid;
 }
@@ -607,6 +645,17 @@ static uint32 parse_steam_app_id(const std::string &program_path)
 // user::saves::local_save_path
 static bool parse_local_save(std::string &save_path)
 {
+    std::string env_save_path = get_env_variable("GseSavePath");
+    if (env_save_path.length()) {
+        if (env_save_path.back() != *PATH_SEPARATOR) {
+            env_save_path.push_back(*PATH_SEPARATOR);
+        }
+
+        save_path = env_save_path;
+        PRINT_DEBUG("using local save path '%s'", save_path.c_str());
+        return true;
+    }
+
     auto ptr = ini.GetValue("user::saves", "local_save_path");
     if (!ptr || !ptr[0]) return false;
     
@@ -978,6 +1027,41 @@ static void parse_subscribed_groups(class Settings *settings_client, class Setti
 
 }
 
+// purchased_keys.txt
+static void parse_purchased_keys(class Settings *settings_client, class Settings *settings_server)
+{
+    std::string purchased_keys_path = Local_Storage::get_game_settings_path() + "purchased_keys.txt";
+    std::ifstream input( std::filesystem::u8path(purchased_keys_path) );
+    if (input.is_open()) {
+        PRINT_DEBUG("Reading purchased keys");
+        common_helpers::consume_bom(input);
+        for( std::string line; getline( input, line ); ) {
+            if (!line.empty() && line[line.length()-1] == '\n') {
+                line.pop_back();
+            }
+
+            if (!line.empty() && line[line.length()-1] == '\r') {
+                line.pop_back();
+            }
+
+            // skip empty lines and comments
+            if (line.empty() || line[0] == '#') continue;
+
+            try {
+                size_t delimiter = line.find('=');
+                if (delimiter != std::string::npos) {
+                    AppId_t app_id = std::stoul(line.substr(0, delimiter));
+                    std::string key = line.substr(delimiter + 1);
+                    settings_client->setPurchasedKey(app_id, key);
+                    settings_server->setPurchasedKey(app_id, key);
+                    PRINT_DEBUG("Added purchased key for app ID %u", app_id);
+                }
+            } catch (...) {}
+        }
+    }
+
+}
+
 // installed_app_ids.txt
 static void parse_installed_app_Ids(class Settings *settings_client, class Settings *settings_server)
 {
@@ -1286,6 +1370,38 @@ static void parse_auto_accept_invite(class Settings *settings_client, class Sett
     }
 }
 
+// auto_send_invite.txt
+static void parse_auto_send_invite(class Settings *settings_client, class Settings *settings_server)
+{
+    std::string auto_send_list_path = Local_Storage::get_game_settings_path() + "auto_send_invite.txt";
+    std::ifstream input( std::filesystem::u8path(auto_send_list_path) );
+    if (input.is_open()) {
+        bool send_any_invite = true;
+        common_helpers::consume_bom(input);
+        for( std::string line; getline( input, line ); ) {
+            line = common_helpers::string_strip(line);
+            if (!line.empty()) {
+                send_any_invite = false;
+                try {
+                    auto friend_id = std::stoull(line);
+                    settings_client->addFriendToOverlayAutoSend((uint64_t)friend_id);
+                    settings_server->addFriendToOverlayAutoSend((uint64_t)friend_id);
+                    PRINT_DEBUG("Adding user with ID (SteamID64) = %llu to auto invite list", friend_id);
+                } catch (...) {}
+            }
+        }
+
+        if (send_any_invite) {
+            PRINT_DEBUG("Auto sending any overlay invitation");
+            settings_client->autoSendAnyOverlayInvites(true);
+            settings_server->autoSendAnyOverlayInvites(true);
+        } else {
+            settings_client->autoSendAnyOverlayInvites(false);
+            settings_server->autoSendAnyOverlayInvites(false);
+        }
+    }
+}
+
 // branches.json
 static bool parse_branches_file(
     const std::string &base_path, const bool force_load,
@@ -1505,6 +1621,9 @@ static void parse_simple_features(class Settings *settings_client, class Setting
     settings_client->disable_account_avatar = !ini.GetBoolValue("main::general", "enable_account_avatar", !settings_client->disable_account_avatar);
     settings_server->disable_account_avatar = !ini.GetBoolValue("main::general", "enable_account_avatar", !settings_server->disable_account_avatar);
 
+    settings_client->enable_voice_chat = ini.GetBoolValue("main::general", "enable_voice_chat", settings_client->enable_voice_chat);
+    settings_server->enable_voice_chat = ini.GetBoolValue("main::general", "enable_voice_chat", settings_server->enable_voice_chat);
+
     settings_client->steam_deck = ini.GetBoolValue("main::general", "steam_deck", settings_client->steam_deck);
     settings_server->steam_deck = ini.GetBoolValue("main::general", "steam_deck", settings_server->steam_deck);
 
@@ -1553,6 +1672,9 @@ static void parse_simple_features(class Settings *settings_client, class Setting
 
     settings_client->free_weekend = ini.GetBoolValue("main::misc", "free_weekend", settings_client->free_weekend);
     settings_server->free_weekend = ini.GetBoolValue("main::misc", "free_weekend", settings_server->free_weekend);
+
+    settings_client->use_32bit_inventory_item_ids = ini.GetBoolValue("main::misc", "use_32bit_inventory_item_ids", settings_client->use_32bit_inventory_item_ids);
+    settings_server->use_32bit_inventory_item_ids = ini.GetBoolValue("main::misc", "use_32bit_inventory_item_ids", settings_server->use_32bit_inventory_item_ids);
 }
 
 // [main::stats]
@@ -1621,6 +1743,7 @@ static bool try_parse_old_steam_interfaces_file(std::string interfaces_path)
         OLD_ITF_LINE("SteamUtils", SettingsItf::UTILS);
         OLD_ITF_LINE("STEAMUSERSTATS_INTERFACE_VERSION", SettingsItf::USER_STATS);
         OLD_ITF_LINE("STEAMAPPS_INTERFACE_VERSION", SettingsItf::APPS);
+        OLD_ITF_LINE("SteamApps", SettingsItf::APPS);
         OLD_ITF_LINE("SteamNetworking", SettingsItf::NETWORKING);
         OLD_ITF_LINE("STEAMREMOTESTORAGE_INTERFACE_VERSION", SettingsItf::REMOTE_STORAGE);
         OLD_ITF_LINE("STEAMSCREENSHOTS_INTERFACE_VERSION", SettingsItf::SCREENSHOTS);
@@ -1850,6 +1973,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     parse_dlc(settings_client, settings_server);
     parse_installed_app_Ids(settings_client, settings_server);
     parse_app_paths(settings_client, settings_server, program_path);
+    parse_purchased_keys(settings_client, settings_server);
 
     parse_leaderboards(settings_client, settings_server);
     parse_stats(settings_client, settings_server, local_storage);
@@ -1860,7 +1984,9 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
 
     parse_mods_folder(settings_client, settings_server, local_storage);
     load_gamecontroller_settings(settings_client);
+    parse_controller_config(settings_client);
     parse_auto_accept_invite(settings_client, settings_server);
+    parse_auto_send_invite(settings_client, settings_server);
     parse_ip_country(local_storage, settings_client, settings_server);
 
     parse_encrypted_app_ticket(settings_client, settings_server);
@@ -1871,6 +1997,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     }
 
     parse_overlay_general_config(settings_client, settings_server);
+    parse_overlay_hotkeys(settings_client, settings_server);
     load_overlay_appearance(settings_client, settings_server, local_storage);
     parse_steam_game_stats_reports_dir(settings_client, settings_server);
     parse_cloud_save(&ini, settings_client, settings_server, local_storage);

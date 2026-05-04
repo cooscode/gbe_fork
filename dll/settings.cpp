@@ -361,6 +361,23 @@ bool Settings::getAppInstallPath(AppId_t appID, std::string &path)
     return false;
 }
 
+void Settings::setPurchasedKey(AppId_t appID, const std::string &key)
+{
+    purchased_keys[appID] = key;
+}
+
+bool Settings::getPurchasedKey(AppId_t appID, std::string &key) const
+{
+    auto it = purchased_keys.find(appID);
+    if (purchased_keys.end() != it)
+    {
+        key = it->second;
+        return true;
+    }
+
+    return false;
+}
+
 void Settings::setLeaderboard(const std::string &leaderboard, enum ELeaderboardSortMethod sort_method, enum ELeaderboardDisplayType display_type)
 {
     Leaderboard_config leader{};
@@ -444,4 +461,27 @@ bool Settings::hasOverlayAutoAcceptInviteFromFriend(uint64_t friend_id) const
 size_t Settings::overlayAutoAcceptInvitesCount() const
 {
     return auto_accept_overlay_invites_friends.size();
+}
+
+void Settings::autoSendAnyOverlayInvites(bool value)
+{
+    auto_send_any_overlay_invites = value;
+}
+
+void Settings::addFriendToOverlayAutoSend(uint64_t friend_id)
+{
+    auto_send_overlay_invites_friends.insert(friend_id);
+}
+
+bool Settings::hasOverlayAutoSendToFriend(uint64_t friend_id) const
+{
+    if (auto_send_any_overlay_invites) {
+        return true;
+    }
+    return !!auto_send_overlay_invites_friends.count(friend_id);
+}
+
+size_t Settings::overlayAutoSendInvitesCount() const
+{
+    return auto_send_overlay_invites_friends.size();
 }
