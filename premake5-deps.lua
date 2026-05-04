@@ -849,6 +849,7 @@ if _OPTIONS["build-sdl"] or _OPTIONS["all-build"] then
         "SDL_SENSOR=OFF",
         "SDL_DIALOG=OFF",
         "SDL_TRAY=OFF",
+        "SDL_UNIX_CONSOLE_BUILD=ON",
     }
 
     if _OPTIONS["32-build"] then

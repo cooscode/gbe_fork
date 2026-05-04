@@ -305,6 +305,13 @@ if os.target() == 'windows' then
     zlib_archive_name = 'zs' -- even on MinGw we need this name
 end
 
+local sdl_name = 'SDL3'
+if os.target() == 'windows' then
+    sdl_name = 'SDL3-static'
+else
+    sdl_name = 'libSDL3'
+end
+
 local deps_link = {
     "ssq"                .. static_postfix,
     zlib_archive_name    .. static_postfix,
@@ -314,7 +321,7 @@ local deps_link = {
     "mbedx509"           .. static_postfix,
     "opus"               .. static_postfix,
     "portaudio"          .. static_postfix,
-    "SDL3-static"        .. static_postfix,
+    sdl_name             .. static_postfix,
 }
 -- add protobuf libs
 table_append(deps_link, {
