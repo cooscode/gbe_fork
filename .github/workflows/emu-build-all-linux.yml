@@ -10,7 +10,7 @@ permissions:
   contents: "write"
 
 env:
-  PREMAKE_ACTION: "gmake2"
+  PREMAKE_ACTION: "gmake"
   DEPS_CACHE_KEY: "emu-deps-linux"
   DEPS_CACHE_DIR: "build/deps/linux"
 
