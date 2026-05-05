@@ -1011,6 +1011,7 @@ void Steam_User::Init( ICMCallback *cmcallback, ISteam2Auth *steam2auth )
 bool Steam_User::BGetCallback( int *piCallback, uint8 **ppubParam, int *unk )
 {
     PRINT_DEBUG_ENTRY();
+    // HACK: Use the first available pipe.
     HSteamUser user = is_server ? SERVER_HSTEAMUSER : CLIENT_HSTEAMUSER;
     HSteamPipe pipe = get_steam_client()->get_pipe_for_user(user);
     if (!pipe)
