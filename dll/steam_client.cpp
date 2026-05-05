@@ -358,20 +358,23 @@ HSteamUser Steam_Client::ConnectToGlobalUser( HSteamPipe hSteamPipe )
         return 0;
     }
 
-    userLogIn();
+    if (client_user_ref_count == 0) {
+        userLogIn();
 
-    // initialize GC now so that we have user's inventory ready right away
-    steam_game_coordinator->initialize_gc();
-    
-    // games like appid 1740720 and 2379780 do not call SteamAPI_RunCallbacks() or SteamAPI_ManualDispatch_RunFrame() or Steam_BGetCallback()
-    // hence all run_callbacks() will never run, which might break the assumption that these callbacks are always run
-    // also networking callbacks won't run
-    // hence we spawn the background thread here which trigger all run_callbacks() and run networking callbacks
-    PRINT_DEBUG("started background thread");
-    background_thread->start(this);
+        // initialize GC now so that we have user's inventory ready right away
+        steam_game_coordinator->initialize_gc();
 
-    steam_overlay->SetupOverlay();
-    
+        // games like appid 1740720 and 2379780 do not call SteamAPI_RunCallbacks() or SteamAPI_ManualDispatch_RunFrame() or Steam_BGetCallback()
+        // hence all run_callbacks() will never run, which might break the assumption that these callbacks are always run
+        // also networking callbacks won't run
+        // hence we spawn the background thread here which trigger all run_callbacks() and run networking callbacks
+        PRINT_DEBUG("started background thread");
+        background_thread->start(this);
+
+        steam_overlay->SetupOverlay();
+    }
+
+    client_user_ref_count++;
     steam_pipes[hSteamPipe] = {Steam_Pipe_Type::CLIENT, false};
     return CLIENT_HSTEAMUSER;
 }
@@ -408,7 +411,7 @@ HSteamUser Steam_Client::CreateLocalUser( HSteamPipe *phSteamPipe )
 // NOT THREADSAFE - ensure that no other threads are accessing Steamworks API when calling
 void Steam_Client::ReleaseUser( HSteamPipe hSteamPipe, HSteamUser hUser )
 {
-    PRINT_DEBUG_ENTRY();
+    PRINT_DEBUG("%i %i", hSteamPipe, hUser);
 
     if (!steam_pipes.count(hSteamPipe))
         return;
@@ -420,7 +423,13 @@ void Steam_Client::ReleaseUser( HSteamPipe hSteamPipe, HSteamUser hUser )
 
         serverShutdown();
     } else if (hUser == CLIENT_HSTEAMUSER) {
-        clientShutdown();
+        if (client_user_ref_count > 0) {
+            client_user_ref_count--;
+
+            if (client_user_ref_count == 0) {
+                clientShutdown();
+            }
+        }
     }
 }
 
