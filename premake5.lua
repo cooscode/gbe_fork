@@ -308,8 +308,6 @@ end
 local sdl_name = 'SDL3'
 if os.target() == 'windows' then
     sdl_name = 'SDL3-static'
-else
-    sdl_name = 'libSDL3'
 end
 
 local deps_link = {
