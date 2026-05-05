@@ -1139,7 +1139,7 @@ void Steam_User::RunCallbacks()
 
         if (call_logged_off && check_timedout(logoff_time, 0.1)) {
             PRINT_DEBUG("ICMCallback -> OnLoggedOff");
-            callbacks_old1->OnLoggedOff();
+            callbacks_old1->OnLoggedOff(k_EResultOK);
             call_logged_off = false;
         }
 
@@ -1162,7 +1162,7 @@ void Steam_User::RunCallbacks()
 
         if (call_logged_off && check_timedout(logoff_time, 0.1)) {
             PRINT_DEBUG("ICMCallback -> OnLoggedOff");
-            callbacks_old2->OnLoggedOff();
+            callbacks_old2->OnLoggedOff(k_EResultOK);
             call_logged_off = false;
         }
 
