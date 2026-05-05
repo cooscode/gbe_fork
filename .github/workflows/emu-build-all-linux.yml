@@ -47,7 +47,7 @@ jobs:
             "tool_lobby_connect",
             "tool_generate_interfaces",
           ]
-        arch: ["x64", "x32"]
+        arch: ["x64", "x86"]
         cfg: ["debug", "release"]
 
     steps:
