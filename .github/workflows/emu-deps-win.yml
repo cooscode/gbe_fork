@@ -22,7 +22,7 @@ env:
 
 jobs:
   deps-build:
-    runs-on: "windows-2025-vs2026"
+    runs-on: "windows-2025"
     if: ${{ !cancelled() }}
 
     steps:
@@ -52,7 +52,7 @@ jobs:
         if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
         uses: actions/checkout@v6
         with:
-          ref: "thirdparty-common-win-premake"
+          ref: "third-party/common/win"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
 
       - name: "Clone third-party deps (deps/win)"
@@ -66,7 +66,7 @@ jobs:
         if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
         uses: actions/checkout@v6
         with:
-          ref: "thirdparty-deps-update"
+          ref: "third-party/deps/common"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/common"
 
       - name: "Build deps"

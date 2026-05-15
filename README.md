@@ -312,7 +312,7 @@ Open CMD in the repos's directory, then run this script
 ```batch
 package_win.bat <build_folder>
 ```
-`build_folder` is any folder inside `build\win`, for example: `6\release`  
+`build_folder` is any folder inside `build\win`, for example: `vs2026\release`  
 The above example will create a `.7z` archive inside `build\package\win\`
 
 ### On Linux:

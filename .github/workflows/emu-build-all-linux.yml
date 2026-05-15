@@ -67,7 +67,7 @@ jobs:
       - name: "Clone third-party build helpers (common/linux)"
         uses: actions/checkout@v6
         with:
-          ref: "thirdparty-common-linux-premake"
+          ref: "third-party/common/linux"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/common/linux"
 
       - name: "Clone third-party build helpers (build/linux)"
