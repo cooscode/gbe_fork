@@ -331,7 +331,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           path: "build/win"
-          pattern: "emu-win-*-${{ github.sha }}"
+          pattern: "emu-win-vs22-*-${{ github.sha }}"
           merge-multiple: true
 
       # print files

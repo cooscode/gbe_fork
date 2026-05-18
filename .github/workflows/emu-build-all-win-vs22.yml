@@ -108,7 +108,7 @@ jobs:
       # build target
       - name: "Build target"
         shell: "cmd"
-        working-directory: "${{ github.workspace }}/build/project/vs2026/win"
+        working-directory: "${{ github.workspace }}/build/project/vs2022/win"
         run: |
           msbuild /nologo /target:${{ matrix.prj }} /m:1 -p:CL_MPCount=${{ env.MAX_PARALLEL_JOBS }} /v:n /p:Configuration=${{ matrix.cfg }},Platform=${{ matrix.arch }} gbe.sln
 
@@ -116,7 +116,7 @@ jobs:
       - name: "Upload target package"
         uses: actions/upload-artifact@v7
         with:
-          name: "emu-win-${{ matrix.prj }}-${{ matrix.cfg }}-${{ matrix.arch }}-${{ github.sha }}"
+          name: "emu-win-vs22-${{ matrix.prj }}-${{ matrix.cfg }}-${{ matrix.arch }}-${{ github.sha }}"
           path: "build/win"
           if-no-files-found: "error"
           compression-level: 9
