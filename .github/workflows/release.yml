@@ -365,7 +365,7 @@ jobs:
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v7
         with:
-          name: "release-emu-win-release-${{ github.sha }}"
+          name: "release-emu-win-vs22-release-${{ github.sha }}"
           path: "build/package/win/vs2022/*release*"
           if-no-files-found: "error"
           compression-level: 0
@@ -375,7 +375,7 @@ jobs:
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v7
         with:
-          name: "release-emu-win-debug-${{ github.sha }}"
+          name: "release-emu-win-vs22-debug-${{ github.sha }}"
           path: "build/package/win/vs2022/*debug*"
           if-no-files-found: "error"
           compression-level: 0
@@ -435,7 +435,7 @@ jobs:
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v7
         with:
-          name: "release-migrate_gse-win-${{ github.sha }}"
+          name: "release-migrate_gse-win-vs22-${{ github.sha }}"
           path: "tools/migrate_gse/bin/package/win/**/*"
           if-no-files-found: "error"
           compression-level: 9
