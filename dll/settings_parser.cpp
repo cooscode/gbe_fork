@@ -310,6 +310,10 @@ static void load_overlay_appearance(class Settings *settings_client, class Setti
                 float nfont_size = std::stof(value, NULL);
                 settings_client->overlay_appearance.font_size_ach_desc = nfont_size;
                 settings_server->overlay_appearance.font_size_ach_desc = nfont_size;
+            } else if (name.compare("Font_Achievement_Title_Bold") == 0) {
+                bool bold = (std::stol(value, NULL) != 0);
+                settings_client->overlay_appearance.font_ach_title_bold = bold;
+                settings_server->overlay_appearance.font_ach_title_bold = bold;
             } else if (name.compare("Icon_Size") == 0) {
                 float nicon_size = std::stof(value, NULL);
                 settings_client->overlay_appearance.icon_size = nicon_size;
