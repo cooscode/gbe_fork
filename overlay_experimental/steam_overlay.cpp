@@ -1593,8 +1593,9 @@ void Steam_Overlay::render_main_window()
                     const bool achieved = x.achieved;
                     const bool hidden = x.hidden && !achieved;
 
-                    try_load_ach_icon(x, true, settings->paginated_achievements_icons == 0);
-                    try_load_ach_icon(x, false, settings->paginated_achievements_icons == 0);
+                    // Load only the icon matching the current state.
+                    // The other variant is loaded by the background pagination or on state change.
+                    try_load_ach_icon(x, achieved, settings->paginated_achievements_icons == 0);
 
                     ImGui::Separator();
 
@@ -1632,9 +1633,11 @@ void Steam_Overlay::render_main_window()
                     if (achieved) {
                         char buffer[80]{};
                         time_t unlock_time = (time_t)x.unlock_time;
-                        size_t written = std::strftime(buffer, sizeof(buffer), settings->overlay_appearance.ach_unlock_datetime_format.c_str(), std::localtime(&unlock_time));
+                        struct tm unlock_tm{};
+                        localtime_s(&unlock_tm, &unlock_time);
+                        size_t written = std::strftime(buffer, sizeof(buffer), settings->overlay_appearance.ach_unlock_datetime_format.c_str(), &unlock_tm);
                         if (!written) {
-                            std::strftime(buffer, sizeof(buffer), "%Y/%m/%d - %H:%M:%S", std::localtime(&unlock_time));
+                            std::strftime(buffer, sizeof(buffer), "%Y/%m/%d - %H:%M:%S", &unlock_tm);
                         }
 
                         ImGui::TextColored(ImVec4(0, 255, 0, 255), translationAchievedOn[current_language], buffer);
