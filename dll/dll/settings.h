@@ -128,7 +128,13 @@ struct Overlay_Appearance {
     constexpr const static NotificationPosition default_pos = NotificationPosition::top_right;
 
     std::string font_override{}; // path to a custom user-provided TTF font
+    std::string font_override_ach_title{}; // path to custom font for achievement title
+    std::string font_override_ach_desc{}; // path to custom font for achievement description
     float font_size = 16.0f;
+    float font_size_fps = 0.0f;
+    float font_size_ach_title = 0.0f;
+    float font_size_ach_desc = 0.0f;
+    bool font_ach_title_bold = false;
     
     float icon_size = 64.0f;
 
@@ -280,7 +286,7 @@ public:
     // allow stats not defined by the user?
     bool allow_unknown_stats = false;
 
-    // whether to enable the functionality which reports an achievement progress for stats that are tied to achievements
+    //whether to enable the functionality which reports an achievement progress for stats that are tied to achievements
     // only used internally for a stat that's tied to an achievement, the normal achievement progress requests made by the game are not impacted
     bool stat_achievement_progress_functionality = true;
     // when a stat that's tied to an achievement gets a new value, should the emu save that progress only if it's higher?
