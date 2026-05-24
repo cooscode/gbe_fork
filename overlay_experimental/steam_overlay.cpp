@@ -1634,7 +1634,11 @@ void Steam_Overlay::render_main_window()
                         char buffer[80]{};
                         time_t unlock_time = (time_t)x.unlock_time;
                         struct tm unlock_tm{};
+#ifdef _MSC_VER
                         localtime_s(&unlock_tm, &unlock_time);
+#else
+                        localtime_r(&unlock_time, &unlock_tm);
+#endif
                         size_t written = std::strftime(buffer, sizeof(buffer), settings->overlay_appearance.ach_unlock_datetime_format.c_str(), &unlock_tm);
                         if (!written) {
                             std::strftime(buffer, sizeof(buffer), "%Y/%m/%d - %H:%M:%S", &unlock_tm);
