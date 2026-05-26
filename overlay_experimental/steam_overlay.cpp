@@ -1269,6 +1269,26 @@ void Steam_Overlay::build_notifications(float width, float height)
                 break;
             }
 
+            // Archive to notification history (lightweight copy, no pointers/GPU resources)
+            {
+                NotificationHistoryEntry entry{};
+                // Use actual achievement unlock time when available,
+                // otherwise fall back to the notification display time.
+                if (item.ach.has_value() && item.ach->unlock_time > 0) {
+                    entry.timestamp = std::chrono::milliseconds(
+                        static_cast<long long>(item.ach->unlock_time) * 1000);
+                } else {
+                    entry.timestamp = item.start_time;
+                }
+                entry.type = item.type;
+                entry.message = item.message;
+                if (notification_history.size() >= MAX_NOTIFICATION_HISTORY) {
+                    notification_history.pop_front();
+                }
+                notification_history.push_back(std::move(entry));
+                notification_history_cache_dirty = true;
+            }
+
             return true;
         }
 
@@ -1516,6 +1536,12 @@ void Steam_Overlay::render_main_window()
             show_settings = !show_settings;
         }
 
+        ImGui::SameLine();
+        // user clicked on "notification history"
+        if (ImGui::Button("History")) {
+            show_notification_history = !show_notification_history;
+        }
+
         ImGui::Spacing();
         ImGui::Spacing();
         // user clicked on "FPS"
@@ -1536,6 +1562,80 @@ void Steam_Overlay::render_main_window()
 
         ImGui::Spacing();
         ImGui::Spacing();
+
+        // --- Notification history panel ---
+        if (show_notification_history) {
+            if (ImGui::SmallButton("Clear All")) {
+                notification_history.clear();
+                notification_history_cache.clear();
+                notification_history_cache_dirty = false;
+            }
+            ImGui::Separator();
+            if (notification_history.empty()) {
+                ImGui::TextDisabled("No notifications yet");
+            } else {
+                ImGui::BeginChild("##history_scroll", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 10), true);
+
+                // Rebuild cache only when history actually changes
+                if (notification_history_cache_dirty) {
+                    notification_history_cache.clear();
+                    notification_history_cache.reserve(notification_history.size());
+
+                    for (auto it = notification_history.rbegin(); it != notification_history.rend(); ++it) {
+                        // Format timestamp HH:MM:SS in local timezone
+                        const time_t total_sec = std::chrono::duration_cast<std::chrono::seconds>(it->timestamp).count();
+                        struct tm local_tm_buf{};
+#ifdef _MSC_VER
+                        localtime_s(&local_tm_buf, &total_sec);
+#else
+                        localtime_r(&total_sec, &local_tm_buf);
+#endif
+                        const auto hr = local_tm_buf.tm_hour;
+                        const auto min = local_tm_buf.tm_min;
+                        const auto sec = local_tm_buf.tm_sec;
+
+                        // Type label
+                        const char *type_label = "?";
+                        switch ((notification_type)it->type) {
+                            case notification_type::message: type_label = "Chat"; break;
+                            case notification_type::invite: type_label = "Invite"; break;
+                            case notification_type::achievement: type_label = "Achievement"; break;
+                            case notification_type::achievement_progress: type_label = "Progress"; break;
+                            case notification_type::auto_accept_invite: type_label = "Auto-Invite"; break;
+                        }
+
+                        // For achievements the message contains "title\ndescription"
+                        // Replace newline with inline separator for compact display
+                        std::string display_msg = it->message;
+                        if (it->type == static_cast<uint8>(notification_type::achievement) ||
+                            it->type == static_cast<uint8>(notification_type::achievement_progress)) {
+                            size_t pos = display_msg.find('\n');
+                            if (pos != std::string::npos) {
+                                display_msg.replace(pos, 1, " — ");
+                            }
+                        }
+
+                        std::string line = (std::ostringstream{}
+                            << "[" << std::setw(2) << std::setfill('0') << hr << ":"
+                            << std::setw(2) << std::setfill('0') << min << ":"
+                            << std::setw(2) << std::setfill('0') << sec << "] "
+                            << type_label << "  "
+                            << display_msg).str();
+
+                        notification_history_cache.push_back(std::move(line));
+                    }
+                    notification_history_cache_dirty = false;
+                }
+
+                // Render from cache
+                for (const auto &line : notification_history_cache) {
+                    ImGui::TextWrapped("%s", line.c_str());
+                    ImGui::Separator();
+                }
+                ImGui::EndChild();
+            }
+        }
+
         ImGui::LabelText("##label", "%s", translationFriends[current_language]);
 
         if (!friends.empty()) {
@@ -2010,11 +2110,10 @@ void Steam_Overlay::AddAchievementNotification(const std::string &ach_name, nloh
 
     PRINT_DEBUG("'%s' %i", ach_name.c_str(), (int)for_progress);
     std::lock_guard<std::recursive_mutex> lock(overlay_mutex);
-    if (!Ready()) return;
 
-    // don't return early when disable_overlay_achievement_notification is true
-    // otherwise when you open the achievements list/menu you won't see the new unlock status
-
+    // Phase 1: Update achievement data regardless of Ready() state.
+    // This keeps the achievement list accurate even if the overlay isn't
+    // fully initialized yet (e.g., during the startup window before late_init_imgui).
     for (auto &a : achievements) {
         if (a.name == ach_name) {
             try {
@@ -2026,6 +2125,9 @@ void Steam_Overlay::AddAchievementNotification(const std::string &ach_name, nloh
                 a.progress = ach.value("progress", static_cast<uint32>(0));
                 a.max_progress = ach.value("max_progress", static_cast<uint32>(0));
             } catch(...) {}
+
+            // Phase 2: Only show notification if overlay is ready
+            if (!Ready()) return;
 
             if (a.achieved && !for_progress) { // here we don't show the progress indications
                 post_achievement_notification(a, for_progress);
