@@ -1626,6 +1626,16 @@ void Steam_Overlay::render_main_window()
 
                     if (hidden) {
                         ImGui::Text("%s", translationHiddenAchievement[current_language]);
+                        ImGui::SameLine();
+
+                        ImGui::PushID(&x);
+                        ImGui::SmallButton("Show");
+                        bool show = ImGui::IsItemActive();
+                        ImGui::PopID();
+
+                        if (show) {
+                            ImGui::TextWrapped("%s", x.description.c_str());
+                        }
                     } else {
                         ImGui::TextWrapped("%s", x.description.c_str());
                     }
