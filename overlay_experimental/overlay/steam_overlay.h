@@ -93,6 +93,14 @@ struct Notification
     std::optional<Overlay_Achievement> ach{};
 };
 
+// Lightweight archive entry -- no pointers, no GPU resources, safe to store long-term
+struct NotificationHistoryEntry
+{
+    std::chrono::milliseconds timestamp{};
+    uint8 type{};
+    std::string message{};
+};
+
 // notification coordinates { x, y }
 struct NotificationsCoords
 {
@@ -146,6 +154,12 @@ class Steam_Overlay
     // Callback infos
     std::queue<Friend> has_friend_action{};
     std::vector<Notification> notifications{};
+    static constexpr size_t MAX_NOTIFICATION_HISTORY = 50;
+    std::deque<NotificationHistoryEntry> notification_history{};
+    bool show_notification_history = false;
+    // Cache for pre-formatted history lines — avoids rebuilding every frame
+    std::vector<std::string> notification_history_cache{};
+    bool notification_history_cache_dirty = false;
     // used when the button "Invite all" is clicked
     std::atomic<bool> invite_all_friends_clicked = false;
 
