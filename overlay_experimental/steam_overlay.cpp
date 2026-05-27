@@ -1744,13 +1744,30 @@ void Steam_Overlay::render_main_window()
             if (ImGui::Begin(translationAchievementWindow[current_language], &show_achievements)) {
                 ImGui::Text("%s", translationListOfAchievements[current_language]);
                 ImGui::BeginChild(translationAchievements[current_language]);
-                for (auto & x : achievements) {
-                    bool achieved = x.achieved;
-                    bool hidden = x.hidden && !achieved;
 
-                    // force upload to GPU if the pagination is request-based
-                    try_load_ach_icon(x, true, settings->paginated_achievements_icons == 0);
-                    try_load_ach_icon(x, false, settings->paginated_achievements_icons == 0);
+                // Build sorted index lists: unlocked by time desc, locked in API order
+                std::vector<size_t> unlocked_idx, locked_idx;
+                unlocked_idx.reserve(achievements.size());
+                locked_idx.reserve(achievements.size());
+                for (size_t i = 0; i < achievements.size(); ++i) {
+                    if (achievements[i].achieved)
+                        unlocked_idx.push_back(i);
+                    else
+                        locked_idx.push_back(i);
+                }
+                std::sort(unlocked_idx.begin(), unlocked_idx.end(),
+                    [this](size_t a, size_t b) {
+                        return achievements[a].unlock_time > achievements[b].unlock_time;
+                    });
+
+                // Lambda to render a single achievement card
+                auto render_ach = [this](Overlay_Achievement &x) {
+                    const bool achieved = x.achieved;
+                    const bool hidden = x.hidden && !achieved;
+
+                    // Load only the icon matching the current state.
+                    // The other variant is loaded by the background pagination or on state change.
+                    try_load_ach_icon(x, achieved, settings->paginated_achievements_icons == 0);
 
                     ImGui::Separator();
 
@@ -1777,11 +1794,20 @@ void Steam_Overlay::render_main_window()
                         }
                     }
 
-                    // we want to display the ach text regardless the icons were displayed or not
                     ImGui::Text("%s", x.title.c_str());
 
                     if (hidden) {
                         ImGui::Text("%s", translationHiddenAchievement[current_language]);
+                        ImGui::SameLine();
+
+                        ImGui::PushID(&x);
+                        ImGui::SmallButton("Show");
+                        bool show = ImGui::IsItemActive();
+                        ImGui::PopID();
+
+                        if (show) {
+                            ImGui::TextWrapped("%s", x.description.c_str());
+                        }
                     } else {
                         ImGui::TextWrapped("%s", x.description.c_str());
                     }
@@ -1789,9 +1815,15 @@ void Steam_Overlay::render_main_window()
                     if (achieved) {
                         char buffer[80]{};
                         time_t unlock_time = (time_t)x.unlock_time;
-                        size_t written = std::strftime(buffer, sizeof(buffer), settings->overlay_appearance.ach_unlock_datetime_format.c_str(), std::localtime(&unlock_time));
-                        if (!written) { // count was reached before the entire string could be stored, keep it safe
-                            std::strftime(buffer, sizeof(buffer), "%Y/%m/%d - %H:%M:%S", std::localtime(&unlock_time));
+                        struct tm unlock_tm{};
+#ifdef _MSC_VER
+                        localtime_s(&unlock_tm, &unlock_time);
+#else
+                        localtime_r(&unlock_time, &unlock_tm);
+#endif
+                        size_t written = std::strftime(buffer, sizeof(buffer), settings->overlay_appearance.ach_unlock_datetime_format.c_str(), &unlock_tm);
+                        if (!written) {
+                            std::strftime(buffer, sizeof(buffer), "%Y/%m/%d - %H:%M:%S", &unlock_tm);
                         }
 
                         ImGui::TextColored(ImVec4(0, 255, 0, 255), translationAchievedOn[current_language], buffer);
@@ -1803,7 +1835,30 @@ void Steam_Overlay::render_main_window()
                     if (could_create_ach_table_entry) ImGui::EndTable();
 
                     ImGui::Separator();
+                };
+
+                // --- Unlocked section ---
+                if (ImGui::CollapsingHeader("Unlocked", ImGuiTreeNodeFlags_DefaultOpen)) {
+                    if (unlocked_idx.empty()) {
+                        ImGui::TextDisabled("No achievements unlocked yet");
+                    } else {
+                        for (auto idx : unlocked_idx) {
+                            render_ach(achievements[idx]);
+                        }
+                    }
                 }
+
+                // --- Locked section ---
+                if (ImGui::CollapsingHeader("Locked", ImGuiTreeNodeFlags_DefaultOpen)) {
+                    if (locked_idx.empty()) {
+                        ImGui::TextDisabled("All achievements unlocked!");
+                    } else {
+                        for (auto idx : locked_idx) {
+                            render_ach(achievements[idx]);
+                        }
+                    }
+                }
+
                 ImGui::EndChild();
             }
 
