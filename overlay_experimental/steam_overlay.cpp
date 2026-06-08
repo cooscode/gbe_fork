@@ -1593,7 +1593,7 @@ void Steam_Overlay::render_main_window()
 
         ImGui::SameLine();
         // user clicked on "show achievements"
-        if (ImGui::SmallButton(translationShowAchievements[current_language])) {
+        if (ImGui::Button(translationShowAchievements[current_language])) {
             show_achievements = !show_achievements;
         }
 
@@ -1809,7 +1809,7 @@ void Steam_Overlay::render_main_window()
                         ImGui::SameLine();
 
                         ImGui::PushID(&x);
-                        ImGui::Button(translationShow[current_language]);
+                        ImGui::SmallButton(translationShow[current_language]);
                         bool show = ImGui::IsItemActive();
                         ImGui::PopID();
 
