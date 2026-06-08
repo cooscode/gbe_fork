@@ -325,6 +325,7 @@ void Steam_Overlay::create_fonts()
         font_builder.AddText(translationRenderer[i]);
         font_builder.AddText(translationShowAchievements[i]);
         font_builder.AddText(translationSettings[i]);
+        font_builder.AddText(translationHistory[i]);
         font_builder.AddText(translationFriends[i]);
         font_builder.AddText(translationNoNotification[i]);
         font_builder.AddText(translationClearAll[i]);
@@ -1617,7 +1618,7 @@ void Steam_Overlay::render_main_window()
 
         ImGui::SameLine();
         // user clicked on "notification history"
-        if (ImGui::Button("History")) {
+        if (ImGui::Button(translationHistory[current_language])) {
             show_notification_history = !show_notification_history;
         }
 
