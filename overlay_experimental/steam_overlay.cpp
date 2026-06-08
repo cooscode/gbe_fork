@@ -1593,7 +1593,7 @@ void Steam_Overlay::render_main_window()
 
         ImGui::SameLine();
         // user clicked on "show achievements"
-        if (ImGui::Button(translationShowAchievements[current_language])) {
+        if (ImGui::SmallButton(translationShowAchievements[current_language])) {
             show_achievements = !show_achievements;
         }
 
