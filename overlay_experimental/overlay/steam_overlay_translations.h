@@ -2887,7 +2887,7 @@ const char translationNotAchieved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"not achieved",
 
 	// 26 - Turkish
-  u8"kazanılmadı",
+  u8"Kazanılmadı",
 
 	// 27 - Ukrainian
   u8"not achieved",
