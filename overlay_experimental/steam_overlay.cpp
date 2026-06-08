@@ -326,7 +326,7 @@ void Steam_Overlay::create_fonts()
         font_builder.AddText(translationShowAchievements[i]);
         font_builder.AddText(translationSettings[i]);
         font_builder.AddText(translationFriends[i]);
-        font_builder.AddText(translationtranslationNoNotification[i]);
+        font_builder.AddText(translationNoNotification[i]);
         font_builder.AddText(translationClearAll[i]);
         font_builder.AddText(translationAchievementWindow[i]);
         font_builder.AddText(translationListOfAchievements[i]);
