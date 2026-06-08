@@ -767,7 +767,7 @@ const char translationAccept[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"ยอมรับ",
 
 	// 26 - Turkish
-  u8"Kabul Et",
+  u8"Kabul et",
 
 	// 27 - Ukrainian
   u8"Прийняти",
@@ -1461,6 +1461,102 @@ const char translationSettings[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   
 };
 
+const char translationHistory[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"History",
+
+	// 1 - Arabic
+  u8"History",
+
+	// 2 - Bulgarian
+  u8"History",
+
+	// 3 - Simplified Chinese
+  u8"History",
+
+	// 4 - Traditional Chinese
+  u8"History",
+
+	// 5 - Czech
+  u8"History",
+
+	// 6 - Danish
+  u8"History",
+
+	// 7 - Dutch
+  u8"History",
+
+	// 8 - Finnish
+  u8"History",
+
+	// 9 - French
+  u8"History",
+
+	// 10 - German
+  u8"History",
+
+	// 11 - Greek
+  u8"History",
+
+	// 12 - Hungarian
+  u8"History",
+
+	// 13 - Italian
+  u8"History",
+
+	// 14 - Japanese
+  u8"History",
+
+	// 15 - Korean
+  u8"History",
+
+	// 16 - Norwegian
+  u8"History",
+
+	// 17 - Polish
+  u8"History",
+
+	// 18 - Portuguese
+  u8"History",
+
+	// 19 - Brazilian Portuguese
+  u8"History",
+
+	// 20 - Romanian
+  u8"History",
+
+	// 21 - Russian
+  u8"History",
+
+	// 22 - Spanish
+  u8"History",
+
+	// 23 - Latin American
+  u8"History",
+
+	// 24 - Swedish
+  u8"History",
+
+	// 25 - Thai
+  u8"History",
+
+	// 26 - Turkish
+  u8"Geçmiş",
+
+	// 27 - Ukrainian
+  u8"History",
+
+	// 28 - Vietnamese
+  u8"History",
+
+	// 29 - Croatian
+  u8"History",
+  
+  // 30 - Indonesian
+  u8"History",
+  
+};
+
 // C:\Program Files (x86)\Steam\resource\overlay_*.txt
 // steam_menu_friends_view
 const char translationFriends[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
@@ -1927,7 +2023,7 @@ const char translationUnlocked[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Unlocked",
 
 	// 26 - Turkish
-  u8"Kilidi Açıldı",
+  u8"Kazanılmış",
 
 	// 27 - Ukrainian
   u8"Unlocked",
@@ -2023,7 +2119,7 @@ const char translationNoUnlockedAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TR
   u8"No achievements unlocked yet",
 
 	// 26 - Turkish
-  u8"Henüz hiçbir başarı açılmadı",
+  u8"Henüz hiçbir başarım kazanılmadı",
 
 	// 27 - Ukrainian
   u8"No achievements unlocked yet",
@@ -2119,7 +2215,7 @@ const char translationLocked[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Locked",
 
 	// 26 - Turkish
-  u8"Kilitli",
+  u8"Kazanılmamış Başarımlar",
 
 	// 27 - Ukrainian
   u8"Locked",
@@ -2215,7 +2311,7 @@ const char translationAllAchievementsUnlocked[TRANSLATION_NUMBER_OF_LANGUAGES][T
   u8"All achievements unlocked!",
 
 	// 26 - Turkish
-  u8"Tüm başarılar açıldı!",
+  u8"Tüm başarılar kazanıldı!",
 
 	// 27 - Ukrainian
   u8"All achievements unlocked!",
@@ -2695,7 +2791,7 @@ const char translationAchievedOn[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BU
   u8"achieved on %s",
 
 	// 26 - Turkish
-  u8"%s tarihinde elde edildi",
+  u8"%s tarihinde kazanıldı",
 
 	// 27 - Ukrainian
   u8"achieved on %s",
@@ -2791,7 +2887,7 @@ const char translationNotAchieved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"not achieved",
 
 	// 26 - Turkish
-  u8"Başarılmadı",
+  u8"kazanılmadı",
 
 	// 27 - Ukrainian
   u8"not achieved",
