@@ -1645,7 +1645,7 @@ void Steam_Overlay::render_main_window()
 
         // --- Notification history panel ---
         if (show_notification_history) {
-            if (ImGui::SmallButton(translationClearAll[current_language])) {
+            if (ImGui::Button(translationClearAll[current_language])) {
                 notification_history.clear();
                 notification_history_cache.clear();
                 notification_history_cache_dirty = false;
@@ -1809,7 +1809,7 @@ void Steam_Overlay::render_main_window()
                         ImGui::SameLine();
 
                         ImGui::PushID(&x);
-                        ImGui::SmallButton(translationShow[current_language]);
+                        ImGui::Button(translationShow[current_language]);
                         bool show = ImGui::IsItemActive();
                         ImGui::PopID();
 
