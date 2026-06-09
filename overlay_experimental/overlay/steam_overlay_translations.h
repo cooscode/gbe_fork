@@ -2023,7 +2023,7 @@ const char translationUnlocked[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Unlocked",
 
 	// 26 - Turkish
-  u8"Kazanılmış",
+  u8"Kazanılmış Başarımlar",
 
 	// 27 - Ukrainian
   u8"Unlocked",
