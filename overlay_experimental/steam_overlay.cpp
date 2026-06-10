@@ -325,12 +325,20 @@ void Steam_Overlay::create_fonts()
         font_builder.AddText(translationRenderer[i]);
         font_builder.AddText(translationShowAchievements[i]);
         font_builder.AddText(translationSettings[i]);
+        font_builder.AddText(translationHistory[i]);
         font_builder.AddText(translationFriends[i]);
+        font_builder.AddText(translationNoNotification[i]);
+        font_builder.AddText(translationClearAll[i]);
         font_builder.AddText(translationAchievementWindow[i]);
         font_builder.AddText(translationListOfAchievements[i]);
         font_builder.AddText(translationAchievements[i]);
         font_builder.AddText(translationHiddenAchievement[i]);
+        font_builder.AddText(translationShow[i]);
         font_builder.AddText(translationAchievedOn[i]);
+        font_builder.AddText(translationUnlocked[i]);
+        font_builder.AddText(translationNoUnlockedAchievements[i]);
+        font_builder.AddText(translationLocked[i]);
+        font_builder.AddText(translationAllAchievementsUnlocked[i]);
         font_builder.AddText(translationNotAchieved[i]);
         font_builder.AddText(translationGlobalSettingsWindow[i]);
         font_builder.AddText(translationGlobalSettingsWindowDescription[i]);
@@ -1610,7 +1618,7 @@ void Steam_Overlay::render_main_window()
 
         ImGui::SameLine();
         // user clicked on "notification history"
-        if (ImGui::Button("History")) {
+        if (ImGui::Button(translationHistory[current_language])) {
             show_notification_history = !show_notification_history;
         }
 
@@ -1637,14 +1645,14 @@ void Steam_Overlay::render_main_window()
 
         // --- Notification history panel ---
         if (show_notification_history) {
-            if (ImGui::SmallButton("Clear All")) {
+            if (ImGui::Button(translationClearAll[current_language])) {
                 notification_history.clear();
                 notification_history_cache.clear();
                 notification_history_cache_dirty = false;
             }
             ImGui::Separator();
             if (notification_history.empty()) {
-                ImGui::TextDisabled("No notifications yet");
+                ImGui::TextDisabled(translationNoNotification[current_language]);
             } else {
                 ImGui::BeginChild("##history_scroll", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 10), true);
 
@@ -1801,7 +1809,7 @@ void Steam_Overlay::render_main_window()
                         ImGui::SameLine();
 
                         ImGui::PushID(&x);
-                        ImGui::SmallButton("Show");
+                        ImGui::SmallButton(translationShow[current_language]);
                         bool show = ImGui::IsItemActive();
                         ImGui::PopID();
 
@@ -1838,9 +1846,9 @@ void Steam_Overlay::render_main_window()
                 };
 
                 // --- Unlocked section ---
-                if (ImGui::CollapsingHeader("Unlocked", ImGuiTreeNodeFlags_DefaultOpen)) {
+                if (ImGui::CollapsingHeader(translationUnlocked[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
                     if (unlocked_idx.empty()) {
-                        ImGui::TextDisabled("No achievements unlocked yet");
+                        ImGui::TextDisabled(translationNoUnlockedAchievements[current_language]);
                     } else {
                         for (auto idx : unlocked_idx) {
                             render_ach(achievements[idx]);
@@ -1849,9 +1857,9 @@ void Steam_Overlay::render_main_window()
                 }
 
                 // --- Locked section ---
-                if (ImGui::CollapsingHeader("Locked", ImGuiTreeNodeFlags_DefaultOpen)) {
+                if (ImGui::CollapsingHeader(translationLocked[current_language], ImGuiTreeNodeFlags_DefaultOpen)) {
                     if (locked_idx.empty()) {
-                        ImGui::TextDisabled("All achievements unlocked!");
+                        ImGui::TextDisabled(translationAllAchievementsUnlocked[current_language]);
                     } else {
                         for (auto idx : locked_idx) {
                             render_ach(achievements[idx]);
