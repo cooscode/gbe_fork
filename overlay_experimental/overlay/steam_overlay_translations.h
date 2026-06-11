@@ -1472,7 +1472,7 @@ const char translationHistory[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"History",
 
 	// 3 - Simplified Chinese
-  u8"History",
+  u8"历史记录",
 
 	// 4 - Traditional Chinese
   u8"History",
@@ -1666,7 +1666,7 @@ const char translationNoNotification[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATIO
   u8"No notifications yet",
 
 	// 3 - Simplified Chinese
-  u8"No notifications yet",
+  u8"暂无通知",
 
 	// 4 - Traditional Chinese
   u8"No notifications yet",
@@ -1762,7 +1762,7 @@ const char translationClearAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Clear All",
 
 	// 3 - Simplified Chinese
-  u8"Clear All",
+  u8"清除所有通知",
 
 	// 4 - Traditional Chinese
   u8"Clear All",
@@ -1858,7 +1858,7 @@ const char translationShow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"Show",
 
 	// 3 - Simplified Chinese
-  u8"Show",
+  u8"显示",
 
 	// 4 - Traditional Chinese
   u8"Show",
@@ -1954,7 +1954,7 @@ const char translationUnlocked[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Unlocked",
 
 	// 3 - Simplified Chinese
-  u8"Unlocked",
+  u8"已解锁",
 
 	// 4 - Traditional Chinese
   u8"Unlocked",
@@ -2050,7 +2050,7 @@ const char translationNoUnlockedAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TR
   u8"No achievements unlocked yet",
 
 	// 3 - Simplified Chinese
-  u8"No achievements unlocked yet",
+  u8"暂无已解锁成就",
 
 	// 4 - Traditional Chinese
   u8"No achievements unlocked yet",
@@ -2146,7 +2146,7 @@ const char translationLocked[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Locked",
 
 	// 3 - Simplified Chinese
-  u8"Locked",
+  u8"未解锁",
 
 	// 4 - Traditional Chinese
   u8"Locked",
@@ -2242,7 +2242,7 @@ const char translationAllAchievementsUnlocked[TRANSLATION_NUMBER_OF_LANGUAGES][T
   u8"All achievements unlocked!",
 
 	// 3 - Simplified Chinese
-  u8"All achievements unlocked!",
+  u8"已解锁所有成就！",
 
 	// 4 - Traditional Chinese
   u8"All achievements unlocked!",
