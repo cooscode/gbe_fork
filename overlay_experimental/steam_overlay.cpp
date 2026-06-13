@@ -15,7 +15,6 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <algorithm>
-#include <shellapi.h>
 #include <sys/stat.h>
 
 #include "InGameOverlay/RendererDetector.h"
