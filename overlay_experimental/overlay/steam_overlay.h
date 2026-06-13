@@ -61,7 +61,6 @@ enum class notification_type
     achievement,
     achievement_progress,
     auto_accept_invite,
-    game_update,
     screenshot,
 };
 

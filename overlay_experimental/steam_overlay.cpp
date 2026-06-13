@@ -764,7 +764,6 @@ bool Steam_Overlay::submit_notification(
         case notification_type::achievement:
         case notification_type::auto_accept_invite:
         case notification_type::message:
-        case notification_type::game_update:
         case notification_type::screenshot:
             // nothing
         break;
@@ -988,9 +987,6 @@ std::chrono::milliseconds Steam_Overlay::get_notification_duration(notification_
 
     case notification_type::auto_accept_invite:
         return Notification::default_show_time;
-
-    case notification_type::game_update:
-        return std::chrono::hours(24); // stay until user clicks a button
 
     case notification_type::screenshot:
         return std::chrono::milliseconds(settings->overlay_appearance.notification_duration_screenshot);
@@ -1240,7 +1236,6 @@ void Steam_Overlay::build_notifications(float width, float height)
             break;
 
             case notification_type::invite:
-            case notification_type::game_update:
             case notification_type::screenshot:
                 // nothing (needs input for buttons)
             break;
@@ -1351,7 +1346,6 @@ void Steam_Overlay::build_notifications(float width, float height)
                 case notification_type::achievement:
                 case notification_type::auto_accept_invite:
                 case notification_type::message:
-                case notification_type::game_update:
                 case notification_type::screenshot:
                     // nothing
                 break;
@@ -1888,7 +1882,6 @@ void Steam_Overlay::render_main_window()
                             case notification_type::achievement: type_label = "Achievement"; break;
                             case notification_type::achievement_progress: type_label = "Progress"; break;
                             case notification_type::auto_accept_invite: type_label = "Auto-Invite"; break;
-                            case notification_type::game_update: type_label = "Update"; break;
                             case notification_type::screenshot: type_label = "Screenshot"; break;
                         }
 
