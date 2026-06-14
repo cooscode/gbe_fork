@@ -2791,6 +2791,10 @@ void Steam_Overlay::refresh_screenshots_list()
     }
     screenshot_items.clear();
 
+    if (!local_storage->dir_exists(Local_Storage::screenshots_folder)) {
+        return;
+    }
+
     std::string path = local_storage->get_path(Local_Storage::screenshots_folder);
     auto filenames = Local_Storage::get_filenames_path(path);
 
