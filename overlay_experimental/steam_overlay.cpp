@@ -16,6 +16,11 @@
 #include <unordered_map>
 #include <algorithm>
 #include <sys/stat.h>
+#include <cstdlib>  // std::system
+
+#ifdef __WINDOWS__
+#include <shellapi.h>
+#endif
 
 #include "InGameOverlay/RendererDetector.h"
 
@@ -2763,7 +2768,7 @@ void Steam_Overlay::process_captured_screenshots()
 #else
         localtime_r(&now_time, &local_tm);
 #endif
-        std::strftime(buff, sizeof(buff), "%a_%b_%d_%H_%M_%S_%Y", &local_tm);
+        std::strftime(buff, sizeof(buff), "%Y-%m-%d_%H-%M-%S", &local_tm);
         std::string filename = buff;
         filename += ".png";
 
@@ -2890,8 +2895,17 @@ void Steam_Overlay::render_gallery_window()
         }
 
         if (!screenshot_items.empty()) {
-            if (ImGui::SmallButton("Refresh")) {
-                refresh_screenshots_list();
+            if (ImGui::SmallButton("Open Folder")) {
+                std::string path = local_storage->get_path(Local_Storage::screenshots_folder);
+#ifdef __WINDOWS__
+                ShellExecuteW(NULL, L"open", std::wstring(path.begin(), path.end()).c_str(), NULL, NULL, SW_SHOWNORMAL);
+#elif defined(__linux__)
+                std::string cmd = "xdg-open \"" + path + "\"";
+                std::system(cmd.c_str());
+#elif defined(__APPLE__)
+                std::string cmd = "open \"" + path + "\"";
+                std::system(cmd.c_str());
+#endif
             }
         }
 
@@ -3001,18 +3015,12 @@ void Steam_Overlay::render_gallery_window()
                 ImGui::PopStyleVar();
                 ImGui::SameLine(0, 0);
                 ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + thumb_width);
-                if (item.mtime > 0) {
-                    char date_buf[32];
-                    struct tm local_tm{};
-#ifdef _MSC_VER
-                    localtime_s(&local_tm, &item.mtime);
-#else
-                    localtime_r(&item.mtime, &local_tm);
-#endif
-                    std::strftime(date_buf, sizeof(date_buf), "%Y-%m-%d-%H:%M", &local_tm);
-                    ImGui::TextUnformatted(date_buf);
-                } else {
-                    ImGui::TextUnformatted(item.filename.c_str());
+                // Show filename (without .png extension) below thumbnail
+                {
+                    std::string label = item.filename;
+                    if (label.size() > 4)
+                        label.resize(label.size() - 4);
+                    ImGui::TextUnformatted(label.c_str());
                 }
                 ImGui::PopTextWrapPos();
 
