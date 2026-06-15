@@ -18,18 +18,13 @@
 #include "dll/steam_client.h"
 #include "dll/settings_parser.h"
 #include "dll/dll.h"
-#include <optional>
-
-#if defined(_WIN32)
-#include <windows.h>
-#endif
 
 
 // Returns true if the game window is the currently focused foreground window.
 // On non-Windows platforms, always returns true (no focus-based pausing).
 static bool is_game_focused()
 {
-#if defined(_WIN32)
+#if defined(__WINDOWS__)
     HWND fg = GetForegroundWindow();
     if (!fg) return false;
     DWORD pid = 0;

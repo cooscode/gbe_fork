@@ -1594,7 +1594,7 @@ void Steam_Overlay::render_main_window()
                 unsigned total_m = static_cast<unsigned>((total_sec % 3600) / 60);
 
                 char total_buf[32]{};
-                char session_buf[32];
+                char session_buf[32]{};
                 snprintf(total_buf, sizeof(total_buf), "%uh %um", total_h, total_m);
                 snprintf(session_buf, sizeof(session_buf), "%02u:%02u:%02u", hh, mm, ss);
 
