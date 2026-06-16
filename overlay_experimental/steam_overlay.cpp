@@ -2812,9 +2812,10 @@ void Steam_Overlay::refresh_screenshots_list()
         item.filename = f;
         item.full_path = path + PATH_SEPARATOR + f;
         // Read file modification time
-#ifdef _MSC_VER
+#ifdef __WINDOWS__
         struct _stat st;
-        if (_stat(item.full_path.c_str(), &st) == 0)
+        auto wstat_path = common_helpers::to_wstr(item.full_path);
+        if (_wstat(wstat_path.c_str(), &st) == 0)
             item.mtime = st.st_mtime;
 #else
         struct stat st;
@@ -2898,7 +2899,8 @@ void Steam_Overlay::render_gallery_window()
             if (ImGui::SmallButton("Open Folder")) {
                 std::string path = local_storage->get_path(Local_Storage::screenshots_folder);
 #ifdef __WINDOWS__
-                ShellExecuteW(NULL, L"open", std::wstring(path.begin(), path.end()).c_str(), NULL, NULL, SW_SHOWNORMAL);
+                auto wpath = common_helpers::to_wstr(path);
+                ShellExecuteW(NULL, L"open", wpath.c_str(), NULL, NULL, SW_SHOWNORMAL);
 #elif defined(__linux__)
                 std::string cmd = "xdg-open \"" + path + "\"";
                 std::system(cmd.c_str());
