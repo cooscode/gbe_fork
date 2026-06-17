@@ -157,6 +157,7 @@ struct Overlay_Appearance {
     uint32 notification_duration_chat = 4000; // sliding animation duration duration (millisec)
 
     std::string ach_unlock_datetime_format = "%Y/%m/%d - %H:%M:%S";
+    bool show_playtime_in_user_info = false;
     
     float background_r = 0.12f;
     float background_g = 0.11f;
@@ -302,6 +303,10 @@ public:
 
     // whether to record playtime
     bool record_playtime = false;
+
+    // pause total / session playtime when the game window loses focus (ALT+TAB)
+    bool pause_total_when_unfocused = false;
+    bool pause_session_when_unfocused = false;
 
     // bypass to make SetAchievement() always return true, prevent some games from breaking
     bool achievement_bypass = false;
