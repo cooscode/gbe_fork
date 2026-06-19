@@ -1660,6 +1660,9 @@ static void parse_overlay_general_config(class Settings *settings_client, class 
     settings_client->overlay_always_show_playtime = ini.GetBoolValue("overlay::general", "overlay_always_show_playtime", settings_client->overlay_always_show_playtime);
     settings_server->overlay_always_show_playtime = ini.GetBoolValue("overlay::general", "overlay_always_show_playtime", settings_server->overlay_always_show_playtime);
 
+    settings_client->enable_screenshot = ini.GetBoolValue("overlay::general", "enable_screenshot", settings_client->enable_screenshot);
+    settings_server->enable_screenshot = ini.GetBoolValue("overlay::general", "enable_screenshot", settings_server->enable_screenshot);
+
     {
         auto val = ini.GetLongValue("overlay::general", "fps_averaging_window", settings_client->overlay_fps_avg_window);
         if (val > 0) {

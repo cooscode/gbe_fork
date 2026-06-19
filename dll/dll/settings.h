@@ -385,6 +385,9 @@ public:
     bool overlay_always_show_playtime = false;
     // keys used to toggle the overlay, default = Shift + Tab
     std::vector<std::string> overlay_toggle_keys{};
+    // 0=disable the F12 screenshot feature
+    // default=1
+    bool enable_screenshot = true;
     std::vector<std::string> overlay_screenshot_keys{};
     // minimum time interval between achievement notifications (in milliseconds)
     int achievement_notification_delay_ms = 0;

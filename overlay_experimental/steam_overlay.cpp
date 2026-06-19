@@ -1551,7 +1551,7 @@ void Steam_Overlay::overlay_render_proc()
     process_achievement_queue();
 
     // -- Screenshot hotkey detection --
-    if (_renderer && !screenshot_keys.empty()) {
+    if (_renderer && settings->enable_screenshot && !screenshot_keys.empty()) {
 #ifdef __WINDOWS__
         // Only respond when the game window is focused
         {
