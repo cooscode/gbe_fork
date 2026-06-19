@@ -1552,6 +1552,17 @@ void Steam_Overlay::overlay_render_proc()
     // -- Screenshot hotkey detection --
     if (_renderer && !screenshot_keys.empty()) {
 #ifdef __WINDOWS__
+        // Only respond when the game window is focused
+        {
+            HWND fg = GetForegroundWindow();
+            if (fg) {
+                DWORD fg_pid = 0;
+                GetWindowThreadProcessId(fg, &fg_pid);
+                if (fg_pid != GetCurrentProcessId())
+                    goto skip_screenshot_hotkey_win;
+            }
+        }
+
         // Map ToggleKey to Windows VK codes and check state
         auto toggleKeyToVK = [](InGameOverlay::ToggleKey key) -> int {
             switch (key) {
@@ -1603,6 +1614,8 @@ void Steam_Overlay::overlay_render_proc()
             PRINT_DEBUG("Screenshot hotkey triggered");
             _renderer->TakeScreenshot(InGameOverlay::ScreenshotType_t::BeforeOverlay);
         }
+
+        skip_screenshot_hotkey_win:;
 #else
         // Non-Windows: use ToggleKey to ImGui mapping
         auto toggleKeyToImGui = [](InGameOverlay::ToggleKey key) -> ImGuiKey {
