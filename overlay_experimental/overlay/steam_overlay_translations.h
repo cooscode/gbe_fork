@@ -1077,6 +1077,102 @@ const char translationUserPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
 
 const char translationTotalTime[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
+  u8"%uh %um",
+
+	// 1 - Arabic
+  u8"%uh %um",
+
+	// 2 - Bulgarian
+  u8"%uh %um",
+
+	// 3 - Simplified Chinese
+  u8"%uh %um",
+
+	// 4 - Traditional Chinese
+  u8"%uh %um",
+
+	// 5 - Czech
+  u8"%uh %um",
+
+	// 6 - Danish
+  u8"%uh %um",
+
+	// 7 - Dutch
+  u8"%uh %um",
+
+	// 8 - Finnish
+  u8"%uh %um",
+
+	// 9 - French
+  u8"%uh %um",
+
+	// 10 - German
+  u8"%uh %um",
+
+	// 11 - Greek
+  u8"%uh %um",
+
+	// 12 - Hungarian
+  u8"%uh %um",
+
+	// 13 - Italian
+  u8"%uh %um",
+
+	// 14 - Japanese
+  u8"%uh %um",
+
+	// 15 - Korean
+  u8"%uh %um",
+
+	// 16 - Norwegian
+  u8"%uh %um",
+
+	// 17 - Polish
+  u8"%uh %um",
+
+	// 18 - Portuguese
+  u8"%uh %um",
+
+	// 19 - Brazilian Portuguese
+  u8"%uh %um",
+
+	// 20 - Romanian
+  u8"%uh %um",
+
+	// 21 - Russian
+  u8"%uh %um",
+
+	// 22 - Spanish
+  u8"%uh %um",
+
+	// 23 - Latin American
+  u8"%uh %um",
+
+	// 24 - Swedish
+  u8"%uh %um",
+
+	// 25 - Thai
+  u8"%uh %um",
+
+	// 26 - Turkish
+  u8"%us %ud",
+
+	// 27 - Ukrainian
+  u8"%uh %um",
+
+	// 28 - Vietnamese
+  u8"%uh %um",
+
+	// 29 - Croatian
+  u8"%uh %um",
+  
+  // 30 - Indonesian
+  u8"%uh %um",
+  
+};
+
+const char translationTotalTimeText[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
   u8"Total: %s  Session: %s",
 
 	// 1 - Arabic
