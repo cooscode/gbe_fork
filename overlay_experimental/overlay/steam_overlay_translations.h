@@ -1075,6 +1075,102 @@ const char translationUserPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   
 };
 
+const char translationTotalTime[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"Total: %s  Session: %s",
+
+	// 1 - Arabic
+  u8"Total: %s  Session: %s",
+
+	// 2 - Bulgarian
+  u8"Total: %s  Session: %s",
+
+	// 3 - Simplified Chinese
+  u8"Total: %s  Session: %s",
+
+	// 4 - Traditional Chinese
+  u8"Total: %s  Session: %s",
+
+	// 5 - Czech
+  u8"Total: %s  Session: %s",
+
+	// 6 - Danish
+  u8"Total: %s  Session: %s",
+
+	// 7 - Dutch
+  u8"Total: %s  Session: %s",
+
+	// 8 - Finnish
+  u8"Total: %s  Session: %s",
+
+	// 9 - French
+  u8"Total: %s  Session: %s",
+
+	// 10 - German
+  u8"Total: %s  Session: %s",
+
+	// 11 - Greek
+  u8"Total: %s  Session: %s",
+
+	// 12 - Hungarian
+  u8"Total: %s  Session: %s",
+
+	// 13 - Italian
+  u8"Total: %s  Session: %s",
+
+	// 14 - Japanese
+  u8"Total: %s  Session: %s",
+
+	// 15 - Korean
+  u8"Total: %s  Session: %s",
+
+	// 16 - Norwegian
+  u8"Total: %s  Session: %s",
+
+	// 17 - Polish
+  u8"Total: %s  Session: %s",
+
+	// 18 - Portuguese
+  u8"Total: %s  Session: %s",
+
+	// 19 - Brazilian Portuguese
+  u8"Total: %s  Session: %s",
+
+	// 20 - Romanian
+  u8"Total: %s  Session: %s",
+
+	// 21 - Russian
+  u8"Total: %s  Session: %s",
+
+	// 22 - Spanish
+  u8"Total: %s  Session: %s",
+
+	// 23 - Latin American
+  u8"Total: %s  Session: %s",
+
+	// 24 - Swedish
+  u8"Total: %s  Session: %s",
+
+	// 25 - Thai
+  u8"Total: %s  Session: %s",
+
+	// 26 - Turkish
+  u8"Toplam: %s  Oturum: %s",
+
+	// 27 - Ukrainian
+  u8"Total: %s  Session: %s",
+
+	// 28 - Vietnamese
+  u8"Total: %s  Session: %s",
+
+	// 29 - Croatian
+  u8"Total: %s  Session: %s",
+  
+  // 30 - Indonesian
+  u8"Total: %s  Session: %s",
+  
+};
+
 const char translationRenderer[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
   u8"Renderer: %s",
