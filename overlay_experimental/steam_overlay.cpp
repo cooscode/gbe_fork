@@ -1554,69 +1554,70 @@ void Steam_Overlay::overlay_render_proc()
     if (_renderer && settings->enable_screenshot && !screenshot_keys.empty()) {
 #ifdef __WINDOWS__
         // Only respond when the game window is focused
+        bool screenshot_focused = true;
         {
             HWND fg = GetForegroundWindow();
             if (fg) {
                 DWORD fg_pid = 0;
                 GetWindowThreadProcessId(fg, &fg_pid);
                 if (fg_pid != GetCurrentProcessId())
-                    goto skip_screenshot_hotkey_win;
+                    screenshot_focused = false;
             }
         }
 
-        // Map ToggleKey to Windows VK codes and check state
-        auto toggleKeyToVK = [](InGameOverlay::ToggleKey key) -> int {
-            switch (key) {
-                case InGameOverlay::ToggleKey::SHIFT: return VK_SHIFT;
-                case InGameOverlay::ToggleKey::CTRL:  return VK_CONTROL;
-                case InGameOverlay::ToggleKey::ALT:   return VK_MENU;
-                case InGameOverlay::ToggleKey::TAB:   return VK_TAB;
-                case InGameOverlay::ToggleKey::F1:    return VK_F1;
-                case InGameOverlay::ToggleKey::F2:    return VK_F2;
-                case InGameOverlay::ToggleKey::F3:    return VK_F3;
-                case InGameOverlay::ToggleKey::F4:    return VK_F4;
-                case InGameOverlay::ToggleKey::F5:    return VK_F5;
-                case InGameOverlay::ToggleKey::F6:    return VK_F6;
-                case InGameOverlay::ToggleKey::F7:    return VK_F7;
-                case InGameOverlay::ToggleKey::F8:    return VK_F8;
-                case InGameOverlay::ToggleKey::F9:    return VK_F9;
-                case InGameOverlay::ToggleKey::F10:   return VK_F10;
-                case InGameOverlay::ToggleKey::F11:   return VK_F11;
-                case InGameOverlay::ToggleKey::F12:   return VK_F12;
-                default: return 0;
+        if (screenshot_focused) {
+            // Map ToggleKey to Windows VK codes and check state
+            auto toggleKeyToVK = [](InGameOverlay::ToggleKey key) -> int {
+                switch (key) {
+                    case InGameOverlay::ToggleKey::SHIFT: return VK_SHIFT;
+                    case InGameOverlay::ToggleKey::CTRL:  return VK_CONTROL;
+                    case InGameOverlay::ToggleKey::ALT:   return VK_MENU;
+                    case InGameOverlay::ToggleKey::TAB:   return VK_TAB;
+                    case InGameOverlay::ToggleKey::F1:    return VK_F1;
+                    case InGameOverlay::ToggleKey::F2:    return VK_F2;
+                    case InGameOverlay::ToggleKey::F3:    return VK_F3;
+                    case InGameOverlay::ToggleKey::F4:    return VK_F4;
+                    case InGameOverlay::ToggleKey::F5:    return VK_F5;
+                    case InGameOverlay::ToggleKey::F6:    return VK_F6;
+                    case InGameOverlay::ToggleKey::F7:    return VK_F7;
+                    case InGameOverlay::ToggleKey::F8:    return VK_F8;
+                    case InGameOverlay::ToggleKey::F9:    return VK_F9;
+                    case InGameOverlay::ToggleKey::F10:   return VK_F10;
+                    case InGameOverlay::ToggleKey::F11:   return VK_F11;
+                    case InGameOverlay::ToggleKey::F12:   return VK_F12;
+                    default: return 0;
+                }
+            };
+
+            bool all_pressed = true;
+            for (auto k : screenshot_keys) {
+                int vk = toggleKeyToVK(k);
+                if (!vk || !(GetAsyncKeyState(vk) & 0x8000)) {
+                    all_pressed = false;
+                    break;
+                }
             }
-        };
 
-        bool all_pressed = true;
-        for (auto k : screenshot_keys) {
-            int vk = toggleKeyToVK(k);
-            if (!vk || !(GetAsyncKeyState(vk) & 0x8000)) {
-                all_pressed = false;
-                break;
+            // Rising edge detection + cooldown (1 second).
+            // `prev_initialized` ensures we don't fire a false trigger on the first call when the
+            // user happens to be holding the hotkey when the overlay is first loaded.
+            static bool prev_screenshot_keys = false;
+            static bool prev_initialized = false;
+            static std::chrono::steady_clock::time_point last_screenshot_time_local{};
+            auto now_local = std::chrono::steady_clock::now();
+            bool rising_edge = false;
+            if (prev_initialized) {
+                rising_edge = all_pressed && !prev_screenshot_keys;
+            }
+            prev_screenshot_keys = all_pressed;
+            prev_initialized = true;
+
+            if (rising_edge && (now_local - last_screenshot_time_local) > std::chrono::seconds(1)) {
+                last_screenshot_time_local = now_local;
+                PRINT_DEBUG("Screenshot hotkey triggered");
+                _renderer->TakeScreenshot(InGameOverlay::ScreenshotType_t::BeforeOverlay);
             }
         }
-
-        // Rising edge detection + cooldown (1 second).
-        // `prev_initialized` ensures we don't fire a false trigger on the first call when the
-        // user happens to be holding the hotkey when the overlay is first loaded.
-        static bool prev_screenshot_keys = false;
-        static bool prev_initialized = false;
-        static std::chrono::steady_clock::time_point last_screenshot_time_local{};
-        auto now_local = std::chrono::steady_clock::now();
-        bool rising_edge = false;
-        if (prev_initialized) {
-            rising_edge = all_pressed && !prev_screenshot_keys;
-        }
-        prev_screenshot_keys = all_pressed;
-        prev_initialized = true;
-
-        if (rising_edge && (now_local - last_screenshot_time_local) > std::chrono::seconds(1)) {
-            last_screenshot_time_local = now_local;
-            PRINT_DEBUG("Screenshot hotkey triggered");
-            _renderer->TakeScreenshot(InGameOverlay::ScreenshotType_t::BeforeOverlay);
-        }
-
-        skip_screenshot_hotkey_win:;
 #else
         // Non-Windows: use ToggleKey to ImGui mapping
         auto toggleKeyToImGui = [](InGameOverlay::ToggleKey key) -> ImGuiKey {
