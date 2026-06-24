@@ -323,6 +323,8 @@ void Steam_Overlay::create_fonts()
         font_builder.AddText(translationRefuse[i]);
         font_builder.AddText(translationSend[i]);
         font_builder.AddText(translationUserPlaying[i]);
+        font_builder.AddText(translationTotalTime[i]);
+        font_builder.AddText(translationTotalTimeText[i]);
         font_builder.AddText(translationRenderer[i]);
         font_builder.AddText(translationShowAchievements[i]);
         font_builder.AddText(translationSettings[i]);
@@ -1595,10 +1597,10 @@ void Steam_Overlay::render_main_window()
 
                 char total_buf[32]{};
                 char session_buf[32]{};
-                snprintf(total_buf, sizeof(total_buf), "%uh %um", total_h, total_m);
+                snprintf(total_buf, sizeof(total_buf), translationTotalTime[current_language], total_h, total_m);
                 snprintf(session_buf, sizeof(session_buf), "%02u:%02u:%02u", hh, mm, ss);
 
-                ImGui::LabelText("##playtime", "Total: %s  Session: %s", total_buf, session_buf);
+                ImGui::LabelText("##playtime", translationTotalTimeText[current_language], total_buf, session_buf);
             }
         }
 
